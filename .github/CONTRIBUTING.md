@@ -6,7 +6,8 @@ We have a comprehensive documentation on how to contribute here: **[Contributing
 
 But here is the gist of it once you have forked the repository:
 
-* before changing the code  
+- before changing the code
+
 ```powershell
 git clone https://github.com/<YOUR GITHUB USER>/JiraAgilePS
 cd JiraAgilePS
@@ -15,11 +16,12 @@ git checkout -b <NAME FOR YOUR FEATURE>
 code .
 ```
 
-* after making the changes  
+- after making the changes
+
 ```powershell
 git add .
 git commit -m "<A MESSAGE ABOUT THE CHANGES>"
 git push
 ```
 
-* [create a Pull Request](https://help.github.com/articles/creating-a-pull-request/)
+- [create a Pull Request](https://help.github.com/articles/creating-a-pull-request/)
