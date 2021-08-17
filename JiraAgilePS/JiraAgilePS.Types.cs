@@ -14,6 +14,12 @@ namespace AtlassianPS
             scrum
         }
 
+        public enum SprintState
+        {
+            active,
+            future,
+            closed
+        }
 
         public class Board
         {
@@ -39,5 +45,33 @@ namespace AtlassianPS
             }
         }
 
+        public class Sprint
+        {
+            public Sprint(UInt64 value) { Id = value; }
+            public Sprint(String value)
+            {
+                UInt64 _id;
+                if (UInt64.TryParse(value, out _id))
+                    Id = _id;
+                else
+                    Name = value;
+            }
+            public Sprint() { }
+
+            public UInt64 Id { get; set; }
+            public String Name { get; set; }
+            public SprintState State { get; set; }
+            public Nullable<DateTime> StartDate { get; set; }
+            public Nullable<DateTime> EndDate { get; set; }
+            public Nullable<DateTime> CompleteDate { get; set; }
+            public UInt64 OriginBoardId { get; set; }
+            public String Goal { get; set; }
+            public Uri Self { get; set; }
+
+            public override string ToString()
+            {
+                return Name;
+            }
+        }
     }
 }
