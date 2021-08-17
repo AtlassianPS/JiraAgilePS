@@ -7,7 +7,7 @@
     Copyright            = '(c) 2017 AtlassianPS. All rights reserved.'
     Description          = 'placeholder'
     PowerShellVersion    = '3.0'
-    RequiredModules      = @("JiraAgilePS")
+    RequiredModules      = @("JiraPS")
     FormatsToProcess     = 'JiraAgilePS.format.ps1xml'
     # NestedModules     = @()
     FunctionsToExport    = '*'
