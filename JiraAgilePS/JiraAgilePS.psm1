@@ -1,12 +1,22 @@
 #region Dependencies
 # Load the ConfluencePS namespace from C#
-# if (!("" -as [Type])) {
-#     Add-Type -Path (Join-Path $PSScriptRoot JiraAgilePS.Types.cs) -ReferencedAssemblies Microsoft.CSharp, Microsoft.PowerShell.Commands.Utility, System.Management.Automation
-# }
+if (!("AtlassianPS.JiraAgilePS.Board" -as [Type])) {
+    Add-Type -Path (Join-Path $PSScriptRoot JiraAgilePS.Types.cs) -ReferencedAssemblies Microsoft.CSharp, Microsoft.PowerShell.Commands.Utility, System.Management.Automation, System.Text.RegularExpressions, System.Runtime.Extensions, System.Collections
+}
+
 if (!("ArgumentCompleter" -as [Type])) {
     Add-Type -Path (Join-Path $PSScriptRoot JiraAgilePS.Attributes.cs) -ReferencedAssemblies Microsoft.CSharp, Microsoft.PowerShell.Commands.Utility, System.Management.Automation
 }
 #endregion Dependencies
+
+#region Configuration
+[UInt32]$script:DefaultPageSize = 25
+$PSDefaultParameterValues = @{
+    Disabled                        = $false
+    'ConvertTo-Json:Compress'       = $true
+    'ConvertTo-Json:EnumsAsStrings' = $true
+}
+#endregion Configuration
 
 #region LoadFunctions
 $PublicFunctions = @( Get-ChildItem -Path "$PSScriptRoot/Public/*.ps1" -ErrorAction SilentlyContinue )
