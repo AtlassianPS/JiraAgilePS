@@ -10,6 +10,9 @@
     "powershell.codeFormatting.preset": "Stroustrup",
     "powershell.codeFormatting.ignoreOneLineBlock": true,
     "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
+    "[shellscript]": {
+        "files.eol": "\n"
+    },
     "[markdown]": {
         "editor.tabSize": 2,
         "editor.trimAutoWhitespace": false,
