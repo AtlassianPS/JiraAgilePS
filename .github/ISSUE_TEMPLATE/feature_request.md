@@ -2,8 +2,6 @@
 name: Feature request
 about: Suggest an idea for this project
 ---
-<!-- markdownlint-disable MD002 -->
-<!-- markdownlint-disable MD041 -->
 
 ## Context
 
