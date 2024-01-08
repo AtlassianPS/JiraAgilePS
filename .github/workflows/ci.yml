@@ -1,0 +1,100 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [master, develop]
+    paths:
+      - "docs/**"
+      - "JiraAgilePS/**"
+      - "Tests/**"
+  pull_request:
+    branches: [master, develop]
+    paths:
+      - ".github/workflows/**"
+      - "docs/**"
+      - "JiraAgilePS/**"
+      - "Tests/**"
+      - "Tools/**"
+      - "JiraAgilePS.build.ps1"
+      - "PSScriptAnalyzerSettings.psd1"
+      - "PSScriptAnalyzerSettings.dev.psd1"
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v3
+        id: cacher
+        with:
+          key: ${{ runner.os }}-PSModules
+          path: "~/.local/share/powershell/Modules"
+
+      - name: Setup
+        if: ${{ steps.cacher.outputs.cache-hit != 'true' }}
+        run: ./Tools/setup.ps1
+
+      - name: CI Context Info
+        run: Invoke-Build -Task ShowInfo
+
+      - name: Build
+        run: Invoke-Build -Task Clean, Build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Release
+          path: |
+            ./Release/
+            ./Tests
+            PSScriptAnalyzerSettings.psd1
+
+  test:
+    needs: [build]
+
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        shell: [pwsh]
+        include:
+          - os: windows-latest
+            shell: powershell
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: Release
+          path: ./Release/
+
+      - uses: actions/cache@v3
+        id: cacher
+        with:
+          key: ${{ runner.os }}-PSModules
+          path: "~/.local/share/powershell/Modules"
+
+      - name: Setup
+        if: ${{ steps.cacher.outputs.cache-hit != 'true' }}
+        run: ${{ matrix.shell }} -c ". ./Tools/setup.ps1"
+
+      - name: CI Context Info
+        run: ${{ matrix.shell }} -c "Invoke-Build -Task ShowInfo"
+
+      - name: Test
+        run: ${{ matrix.shell }} -c "Invoke-Build -Task Test"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-${{ matrix.shell }}-TestResults
+          path: testResults*.xml
+          if-no-files-found: error
+        if: ${{ always() }}

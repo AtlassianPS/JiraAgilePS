@@ -23,6 +23,7 @@
             IconUri                    = 'https://AtlassianPS.org/assets/img/JiraAgilePS.png'
             ReleaseNotes               = 'https://github.com/AtlassianPS/JiraAgilePS/blob/master/CHANGELOG.md'
             ExternalModuleDependencies = 'JiraPS'
+            Prerelease                 = ''
         }
     }
     DefaultCommandPrefix = 'JiraAgile'
