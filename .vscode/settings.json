@@ -10,6 +10,8 @@
     "powershell.codeFormatting.preset": "Stroustrup",
     "powershell.codeFormatting.ignoreOneLineBlock": true,
     "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
+    "powershell.pester.useLegacyCodeLens": true,
+    "powershell.pester.codeLens": false,
     "[shellscript]": {
         "files.eol": "\n"
     },
