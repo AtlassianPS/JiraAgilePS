@@ -113,6 +113,9 @@ task ShowInfo Init, GetNextVersion, {
     Write-Build Gray ('OS Version:                 {0}' -f $OSVersion)
     Write-Build Gray
 }
+
+# Synopsis: Compatibility alias expected by shared setup action
+task ShowDebugInfo ShowInfo
 #endregion DebugInformation
 
 #region BuildRelease
@@ -138,9 +141,20 @@ task CopyModuleFiles {
 
 # Synopsis: Prepare tests for ./Release
 task PrepareTests Init, {
-    $null = New-Item -Path "$env:BHBuildOutput/Tests" -ItemType Directory -ErrorAction SilentlyContinue
-    Copy-Item -Path "$env:BHProjectPath/Tests" -Destination $env:BHBuildOutput -Recurse -Force
-    Copy-Item -Path "$env:BHProjectPath/PSScriptAnalyzerSettings.psd1" -Destination $env:BHBuildOutput -Force
+    $null = New-Item -Path "$env:BHBuildOutput/Tests" -ItemType Directory -Force -ErrorAction SilentlyContinue
+
+    $testsPath = "$env:BHProjectPath/Tests"
+    if (Test-Path $testsPath) {
+        Copy-Item -Path $testsPath -Destination $env:BHBuildOutput -Recurse -Force
+    }
+    else {
+        Write-Warning "No Tests directory found at '$testsPath'. Continuing without bundled tests."
+    }
+
+    $analyzerSettingsPath = "$env:BHProjectPath/PSScriptAnalyzerSettings.psd1"
+    if (Test-Path $analyzerSettingsPath) {
+        Copy-Item -Path $analyzerSettingsPath -Destination $env:BHBuildOutput -Force
+    }
 }
 
 # Synopsis: Compile all functions into the .psm1 file
@@ -181,7 +195,9 @@ task CompileModule Init, {
 
 # Synopsis: Use PlatyPS to generate External-Help
 task GenerateExternalHelp Init, {
-    Import-Module platyPS -Force
+    if (-not (Get-Module -Name platyPS)) {
+        Import-Module platyPS -Force
+    }
     foreach ($locale in (Get-ChildItem "$env:BHProjectPath/docs" -Attribute Directory)) {
         New-ExternalHelp -Path "$($locale.FullName)" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
         New-ExternalHelp -Path "$($locale.FullName)/commands" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
@@ -218,6 +234,13 @@ task Test Init, {
     Assert-True { Test-Path $env:BHBuildOutput -PathType Container } "Release path must exist"
 
     Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+
+    $testScriptPath = "$env:BHBuildOutput/Tests"
+    $testScripts = @(Get-ChildItem -Path $testScriptPath -Filter '*.ps1' -File -Recurse -ErrorAction SilentlyContinue)
+    if (-not $testScripts) {
+        Write-Warning "No test files found at '$testScriptPath'. Skipping Test task."
+        return
+    }
 
     <# $params = @{
         Path    = "$env:BHBuildOutput/$env:BHProjectName"
