@@ -8,7 +8,7 @@ function Get-Board {
         $BoardId,
 
         [Parameter()]
-        [ValidateRange(1, [UInt]::MaxValue)]
+        [ValidateRange(1, 4294967295)]
         [UInt]$PageSize = $script:DefaultPageSize,
 
         [Parameter()]
