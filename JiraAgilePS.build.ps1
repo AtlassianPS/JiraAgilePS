@@ -250,18 +250,34 @@ task Test Init, {
     }
     $codeCoverageFiles = Get-ChildItem @params #>
 
-    Import-Module Pester -MinimumVersion 5.0.0 -ErrorAction Stop
+    $pesterConfigHash = @{
+        Run        = @{
+            Path     = "$env:BHBuildOutput/Tests/*"
+            PassThru = $true
+            Exit     = $false
+        }
+        TestResult = @{
+            Enabled      = $true
+            OutputFormat = "NUnitXml"
+            OutputPath   = "$env:BHProjectPath/Test-$OS-$($PSVersionTable.PSVersion.ToString()).xml"
+        }
+        Output     = @{
+            Verbosity = "Normal"
+        }
+    }
 
-    $pesterConfiguration = New-PesterConfiguration
-    $pesterConfiguration.Run.Path = "$env:BHBuildOutput/Tests/*"
-    $pesterConfiguration.Run.PassThru = $true
-    $pesterConfiguration.Run.Exit = $false
-    $pesterConfiguration.Filter.Tag = $Tag
-    $pesterConfiguration.Filter.ExcludeTag = $ExcludeTag
-    $pesterConfiguration.TestResult.Enabled = $true
-    $pesterConfiguration.TestResult.OutputFormat = "NUnitXml"
-    $pesterConfiguration.TestResult.OutputPath = "$env:BHProjectPath/Test-$OS-$($PSVersionTable.PSVersion.ToString()).xml"
-    $pesterConfiguration.Output.Verbosity = "Normal"
+    if ($Tag) {
+        $pesterConfigHash['Filter'] = @{ Tag = $Tag }
+    }
+
+    if ($ExcludeTag) {
+        if (-not $pesterConfigHash.ContainsKey('Filter')) {
+            $pesterConfigHash['Filter'] = @{}
+        }
+        $pesterConfigHash['Filter']['ExcludeTag'] = $ExcludeTag
+    }
+
+    $pesterConfiguration = New-PesterConfiguration -Hashtable $pesterConfigHash
     # $pesterConfiguration.CodeCoverage.Enabled = $true
     # $pesterConfiguration.CodeCoverage.Path = $codeCoverageFiles.FullName
 
