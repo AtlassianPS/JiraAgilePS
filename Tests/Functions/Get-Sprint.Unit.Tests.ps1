@@ -1,15 +1,8 @@
 #requires -modules Pester
 
-BeforeAll {
-    $relativePath = "$PSScriptRoot/../.."
-    if ($env:BHBuildOutput) { $relativePath = $env:BHBuildOutput }
-    Remove-Module "JiraAgilePS" -ErrorAction SilentlyContinue
-    Import-Module "$relativePath/JiraAgilePS" -Force
-}
-
-AfterAll {
-    Remove-Module "JiraAgilePS" -ErrorAction SilentlyContinue
-}
+$modulePath = Join-Path $PSScriptRoot "../../JiraAgilePS"
+Remove-Module "JiraAgilePS" -ErrorAction SilentlyContinue
+Import-Module $modulePath -Force -ErrorAction Stop
 
 Describe "Get-JiraAgileSprint" -Tag Unit {
     BeforeEach {
