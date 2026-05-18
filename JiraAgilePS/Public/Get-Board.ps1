@@ -4,7 +4,7 @@ function Get-Board {
     [OutputType( [AtlassianPS.JiraAgilePS.Board] )]
     param(
         [Parameter( Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_Search' )]
-        [UInt[]]
+        [UInt64[]]
         $BoardId,
 
         [Parameter()]
