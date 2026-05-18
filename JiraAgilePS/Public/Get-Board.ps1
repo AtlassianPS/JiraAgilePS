@@ -9,7 +9,7 @@ function Get-Board {
 
         [Parameter()]
         [ValidateRange(1, 4294967295)]
-        [UInt]$PageSize = $script:DefaultPageSize,
+        [UInt32]$PageSize = $script:DefaultPageSize,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
