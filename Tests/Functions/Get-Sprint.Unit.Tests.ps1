@@ -17,6 +17,32 @@ InModuleScope JiraAgilePS {
             }
         }
 
+        Describe "Signature" {
+            BeforeAll {
+                $script:command = Get-Command -Name "Get-JiraAgileSprint"
+            }
+
+            Context "Parameter Types" {
+                It "has a parameter '<parameter>' of type '<type>'" -TestCases @(
+                    @{ parameter = "Sprint"; type = [AtlassianPS.JiraAgilePS.Sprint[]] }
+                    @{ parameter = "Board"; type = [AtlassianPS.JiraAgilePS.Board] }
+                    @{ parameter = "State"; type = [AtlassianPS.JiraAgilePS.SprintState] }
+                    @{ parameter = "PageSize"; type = [UInt32] }
+                    @{ parameter = "Credential"; type = [System.Management.Automation.PSCredential] }
+                ) {
+                    $command | Should -HaveParameter $parameter -Type $type
+                }
+            }
+
+            Context "Default Values" {
+                It "parameter '<parameter>' has a default value of '<defaultValue>'" -TestCases @(
+                    @{ parameter = "Credential"; defaultValue = "[System.Management.Automation.PSCredential]::Empty" }
+                ) {
+                    $command | Should -HaveParameter $parameter -DefaultValue $defaultValue
+                }
+            }
+        }
+
         Describe "Behavior" {
             It "requests all sprints for a board" {
                 Mock Invoke-JiraMethod -ModuleName JiraAgilePS {

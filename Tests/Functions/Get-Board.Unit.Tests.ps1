@@ -17,6 +17,30 @@ InModuleScope JiraAgilePS {
             }
         }
 
+        Describe "Signature" {
+            BeforeAll {
+                $script:command = Get-Command -Name "Get-JiraAgileBoard"
+            }
+
+            Context "Parameter Types" {
+                It "has a parameter '<parameter>' of type '<type>'" -TestCases @(
+                    @{ parameter = "BoardId"; type = [UInt64[]] }
+                    @{ parameter = "PageSize"; type = [UInt32] }
+                    @{ parameter = "Credential"; type = [System.Management.Automation.PSCredential] }
+                ) {
+                    $command | Should -HaveParameter $parameter -Type $type
+                }
+            }
+
+            Context "Default Values" {
+                It "parameter '<parameter>' has a default value of '<defaultValue>'" -TestCases @(
+                    @{ parameter = "Credential"; defaultValue = "[System.Management.Automation.PSCredential]::Empty" }
+                ) {
+                    $command | Should -HaveParameter $parameter -DefaultValue $defaultValue
+                }
+            }
+        }
+
         Describe "Behavior" {
             It "requests all boards from the agile board endpoint" {
                 Mock Invoke-JiraMethod -ModuleName JiraAgilePS {

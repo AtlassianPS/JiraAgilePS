@@ -26,6 +26,39 @@ InModuleScope JiraAgilePS {
             }
         }
 
+        Describe "Signature" {
+            BeforeAll {
+                $script:command = Get-Command -Name "Add-JiraAgileIssueToSprint"
+            }
+
+            Context "Parameter Types" {
+                It "has a parameter '<parameter>' of type '<type>'" -TestCases @(
+                    @{ parameter = "Issue"; type = [Object] }
+                    @{ parameter = "Sprint"; type = [AtlassianPS.JiraAgilePS.Sprint] }
+                    @{ parameter = "Credential"; type = [System.Management.Automation.PSCredential] }
+                ) {
+                    $command | Should -HaveParameter $parameter -Type $type
+                }
+            }
+
+            Context "Default Values" {
+                It "parameter '<parameter>' has a default value of '<defaultValue>'" -TestCases @(
+                    @{ parameter = "Credential"; defaultValue = "[System.Management.Automation.PSCredential]::Empty" }
+                ) {
+                    $command | Should -HaveParameter $parameter -DefaultValue $defaultValue
+                }
+            }
+
+            Context "Mandatory Parameters" {
+                It "parameter '<parameter>' is mandatory" -TestCases @(
+                    @{ parameter = "Issue" }
+                    @{ parameter = "Sprint" }
+                ) {
+                    $command | Should -HaveParameter $parameter -Mandatory
+                }
+            }
+        }
+
         Describe "Behavior" {
             It "posts issue keys to the sprint issue endpoint" {
                 $sprint = [AtlassianPS.JiraAgilePS.Sprint]::new(99)
