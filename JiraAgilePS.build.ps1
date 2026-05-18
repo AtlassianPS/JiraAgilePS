@@ -250,24 +250,27 @@ task Test Init, {
     }
     $codeCoverageFiles = Get-ChildItem @params #>
 
-    try {
-        $parameter = @{
-            Script       = "$env:BHBuildOutput/Tests/*"
-            Tag          = $Tag
-            ExcludeTag   = $ExcludeTag
-            Show         = "Fails"
-            PassThru     = $true
-            OutputFile   = "$env:BHProjectPath/Test-$OS-$($PSVersionTable.PSVersion.ToString()).xml"
-            OutputFormat = "NUnitXml"
-            # CodeCoverage = $codeCoverageFiles
-        }
-        $testResults = Invoke-Pester @parameter
+    Import-Module Pester -MinimumVersion 5.0.0 -ErrorAction Stop
 
-        Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) Pester test(s) failed."
-    }
-    catch {
-        throw $_
-    }
+    $pesterConfiguration = New-PesterConfiguration
+    $pesterConfiguration.Run.Path = "$env:BHBuildOutput/Tests/*"
+    $pesterConfiguration.Run.PassThru = $true
+    $pesterConfiguration.Run.Exit = $false
+    $pesterConfiguration.Filter.Tag = $Tag
+    $pesterConfiguration.Filter.ExcludeTag = $ExcludeTag
+    $pesterConfiguration.TestResult.Enabled = $true
+    $pesterConfiguration.TestResult.OutputFormat = "NUnitXml"
+    $pesterConfiguration.TestResult.OutputPath = "$env:BHProjectPath/Test-$OS-$($PSVersionTable.PSVersion.ToString()).xml"
+    $pesterConfiguration.Output.Verbosity = "Normal"
+    # $pesterConfiguration.CodeCoverage.Enabled = $true
+    # $pesterConfiguration.CodeCoverage.Path = $codeCoverageFiles.FullName
+
+    $testResults = Invoke-Pester -Configuration $pesterConfiguration
+
+    Assert-True ($testResults.Result -eq "Passed") ("Pester run did not pass. " +
+        "FailedCount=$($testResults.FailedCount); " +
+        "FailedContainersCount=$($testResults.FailedContainersCount); " +
+        "FailedBlocksCount=$($testResults.FailedBlocksCount).")
 }, { Init }
 #endregion
 

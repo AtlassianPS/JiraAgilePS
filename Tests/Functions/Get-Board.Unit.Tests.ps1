@@ -1,51 +1,64 @@
-#requires -modules Pester
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
 
-$modulePath = Join-Path $PSScriptRoot "../../JiraAgilePS"
-Remove-Module "JiraAgilePS" -ErrorAction SilentlyContinue
-Import-Module $modulePath -Force -ErrorAction Stop
+BeforeDiscovery {
+    . "$PSScriptRoot/../Helpers/TestTools.ps1"
 
-Describe "Get-JiraAgileBoard" -Tag Unit {
-    BeforeEach {
-        Mock Get-JiraConfigServer -ModuleName JiraAgilePS {
-            "https://jira.example.com"
-        }
-    }
+    $script:moduleToTest = Initialize-TestEnvironment
+}
 
-    It "requests all boards from the agile board endpoint" {
-        Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
-            [pscustomobject]@{
-                Id   = 1
-                Name = "Main board"
-                Type = "scrum"
-                Self = "https://jira.example.com/rest/agile/1.0/board/1"
+InModuleScope JiraAgilePS {
+    Describe "Get-JiraAgileBoard" -Tag 'Unit' {
+        BeforeAll {
+            . "$PSScriptRoot/../Helpers/TestTools.ps1"
+            $script:jiraServer = "https://jira.example.com"
+
+            Mock Get-JiraConfigServer -ModuleName JiraAgilePS {
+                $jiraServer
             }
         }
 
-        $result = Get-JiraAgileBoard
+        Describe "Behavior" {
+            It "requests all boards from the agile board endpoint" {
+                Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
+                    [pscustomobject]@{
+                        Id   = 1
+                        Name = "Main board"
+                        Type = "scrum"
+                        Self = "$jiraServer/rest/agile/1.0/board/1"
+                    }
+                }
 
-        Assert-MockCalled Invoke-JiraMethod -ModuleName JiraAgilePS -Times 1 -Exactly -Scope It -ParameterFilter {
-            $Method -eq "GET" -and $Uri -eq "https://jira.example.com/rest/agile/1.0/board" -and $Paging
-        }
-        $result.Id | Should -Be 1
-        $result.Name | Should -Be "Main board"
-    }
+                $result = Get-JiraAgileBoard
 
-    It "requests a specific board when BoardId is supplied" {
-        Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
-            [pscustomobject]@{
-                Id   = 7
-                Name = "Target board"
-                Type = "kanban"
-                Self = "https://jira.example.com/rest/agile/1.0/board/7"
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board" -and
+                    $Paging
+                }
+                $result.Id | Should -Be 1
+                $result.Name | Should -Be "Main board"
+            }
+
+            It "requests a specific board when BoardId is supplied" {
+                Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
+                    [pscustomobject]@{
+                        Id   = 7
+                        Name = "Target board"
+                        Type = "kanban"
+                        Self = "$jiraServer/rest/agile/1.0/board/7"
+                    }
+                }
+
+                $result = Get-JiraAgileBoard -BoardId 7
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/7" -and
+                    (-not $Paging)
+                }
+                $result.Id | Should -Be 7
+                $result.Name | Should -Be "Target board"
             }
         }
-
-        $result = Get-JiraAgileBoard -BoardId 7
-
-        Assert-MockCalled Invoke-JiraMethod -ModuleName JiraAgilePS -Times 1 -Exactly -Scope It -ParameterFilter {
-            $Method -eq "GET" -and $Uri -eq "https://jira.example.com/rest/agile/1.0/board/7" -and -not $Paging
-        }
-        $result.Id | Should -Be 7
-        $result.Name | Should -Be "Target board"
     }
 }

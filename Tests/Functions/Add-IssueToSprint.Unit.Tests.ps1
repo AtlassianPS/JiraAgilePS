@@ -1,47 +1,58 @@
-#requires -modules Pester
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
 
-$modulePath = Join-Path $PSScriptRoot "../../JiraAgilePS"
-Remove-Module "JiraAgilePS" -ErrorAction SilentlyContinue
-Import-Module $modulePath -Force -ErrorAction Stop
+BeforeDiscovery {
+    . "$PSScriptRoot/../Helpers/TestTools.ps1"
 
-Describe "Add-JiraAgileIssueToSprint" -Tag Unit {
-    BeforeEach {
-        Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
-            param($Uri, $Method, $Body)
+    $script:moduleToTest = Initialize-TestEnvironment
+}
+
+InModuleScope JiraAgilePS {
+    Describe "Add-JiraAgileIssueToSprint" -Tag 'Unit' {
+        BeforeAll {
+            . "$PSScriptRoot/../Helpers/TestTools.ps1"
+            $script:sprintUri = "https://jira.example.com/rest/agile/1.0/sprint/99"
         }
 
-        Mock Get-Sprint -ModuleName JiraAgilePS {
-            [AtlassianPS.JiraAgilePS.Sprint]@{
-                Id   = 99
-                Self = [Uri]"https://jira.example.com/rest/agile/1.0/sprint/99"
+        BeforeEach {
+            Mock Get-Sprint -ModuleName JiraAgilePS {
+                [AtlassianPS.JiraAgilePS.Sprint]@{
+                    Id   = 99
+                    Self = [Uri]$sprintUri
+                }
+            }
+
+            Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
+                param($Uri, $Method, $Body)
             }
         }
-    }
 
-    It "posts issue keys to the sprint issue endpoint" {
-        $sprint = [AtlassianPS.JiraAgilePS.Sprint]::new(99)
-        $sprint.Self = [Uri]"https://jira.example.com/rest/agile/1.0/sprint/99"
-        $issues = @(
-            [pscustomobject]@{ Key = "AG-1" }
-            [pscustomobject]@{ Key = "AG-2" }
-        )
+        Describe "Behavior" {
+            It "posts issue keys to the sprint issue endpoint" {
+                $sprint = [AtlassianPS.JiraAgilePS.Sprint]::new(99)
+                $sprint.Self = [Uri]$sprintUri
+                $issues = @(
+                    [pscustomobject]@{ Key = "AG-1" }
+                    [pscustomobject]@{ Key = "AG-2" }
+                )
 
-        Add-JiraAgileIssueToSprint -Issue $issues -Sprint $sprint
+                { Add-JiraAgileIssueToSprint -Issue $issues -Sprint $sprint } | Should -Not -Throw
 
-        Assert-MockCalled Invoke-JiraMethod -ModuleName JiraAgilePS -Times 1 -Exactly -Scope It -ParameterFilter {
-            $Method -eq "POST" -and
-            $Uri -eq "https://jira.example.com/rest/agile/1.0/sprint/99/issue" -and
-            (($Body | ConvertFrom-Json).issues -join ",") -eq "AG-1,AG-2"
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "POST" -and
+                    $Uri -eq "$sprintUri/issue" -and
+                    (($Body | ConvertFrom-Json).issues -join ",") -eq "AG-1,AG-2"
+                }
+            }
+
+            It "resolves sprint details when Self is not provided" {
+                $sprintWithoutSelf = [AtlassianPS.JiraAgilePS.Sprint]::new(99)
+                $issues = @([pscustomobject]@{ Key = "AG-1" })
+
+                { Add-JiraAgileIssueToSprint -Issue $issues -Sprint $sprintWithoutSelf } | Should -Not -Throw
+
+                Should -Invoke -CommandName Get-Sprint -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It
+            }
         }
-    }
-
-    It "resolves sprint details when Self is not provided" {
-        $sprintWithoutSelf = [AtlassianPS.JiraAgilePS.Sprint]::new(99)
-        $issues = @([pscustomobject]@{ Key = "AG-1" })
-
-        Add-JiraAgileIssueToSprint -Issue $issues -Sprint $sprintWithoutSelf
-
-        Assert-MockCalled Get-Sprint -ModuleName JiraAgilePS -Times 1 -Exactly -Scope It
-        Assert-MockCalled Invoke-JiraMethod -ModuleName JiraAgilePS -Times 1 -Exactly -Scope It
     }
 }
