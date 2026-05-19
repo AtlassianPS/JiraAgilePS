@@ -19,7 +19,7 @@ Validation expectations for this repository's current legacy state:
 
 - `Invoke-Build -Task Test` runs from `Release/Tests/` and may warn/skip when no `Tests/*.ps1` files exist.
 - Do not claim validation passed if `Build` or `Test` fails; include failing task and error.
-- Use focused `Invoke-Pester` runs when test files exist.
+- During iteration, use focused `Invoke-Pester` runs when test files exist (for example `Invoke-Pester -Path 'Tests/Functions/Public/Get-Board.Unit.Tests.ps1'`).
 - When changing behavior without existing coverage, add tests where practical.
 
 ## Source Layout
@@ -36,6 +36,13 @@ Validation expectations for this repository's current legacy state:
 - Route Jira API calls through `Invoke-JiraMethod`.
 - Avoid introducing direct web calls in cmdlet implementations.
 - Keep paging and credential behavior aligned with existing cmdlets.
+- Jira Agile endpoints in this module are based on `/rest/agile/1.0`; keep Cloud/Data Center compatibility behavior explicit.
+
+## Supported API Reference Tracks
+
+- Cloud (supported research target): Jira Software Cloud REST API: https://developer.atlassian.com/cloud/jira/software/rest/
+- Data Center/Server (supported research target): Jira Software Server/Data Center REST API: https://docs.atlassian.com/jira-software/REST/latest/
+- Before adopting or changing endpoint/field behavior, verify against both references unless the task is explicitly Cloud-only or Data Center-only.
 
 ## Coding Conventions
 

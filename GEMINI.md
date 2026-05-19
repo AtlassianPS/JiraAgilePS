@@ -9,9 +9,10 @@ Read this file first, then follow canonical sources:
 
 1. Scope each change to one behavior; update tests/docs/changelog when impacted and available.
 2. Route Jira API interactions through `Invoke-JiraMethod` and preserve Cloud/Data Center behavior.
-3. Validate from repo root with `./Tools/setup.ps1` then `Invoke-Build -Task Build, Test`.
-4. This repo may have no `Tests/`; validation can warn/skip tests—report exact outcomes.
-5. Public function sources are unprefixed (for example `Get-Board`) and exported with `JiraAgile` prefix.
+3. During iteration, run targeted tests when present (for example `Invoke-Pester -Path 'Tests/Functions/Public/Get-Board.Unit.Tests.ps1'`).
+4. Before finalizing, validate from repo root with `./Tools/setup.ps1` then `Invoke-Build -Task Build, Test`.
+5. This repo may have no `Tests/`; validation can warn/skip tests—report exact outcomes.
+6. Public function sources are unprefixed (for example `Get-Board`) and exported with `JiraAgile` prefix.
 
 ## File Locations
 
