@@ -250,24 +250,43 @@ task Test Init, {
     }
     $codeCoverageFiles = Get-ChildItem @params #>
 
-    try {
-        $parameter = @{
-            Script       = "$env:BHBuildOutput/Tests/*"
-            Tag          = $Tag
-            ExcludeTag   = $ExcludeTag
-            Show         = "Fails"
-            PassThru     = $true
-            OutputFile   = "$env:BHProjectPath/Test-$OS-$($PSVersionTable.PSVersion.ToString()).xml"
-            OutputFormat = "NUnitXml"
-            # CodeCoverage = $codeCoverageFiles
+    $pesterConfigHash = @{
+        Run        = @{
+            Path     = "$env:BHBuildOutput/Tests/*"
+            PassThru = $true
+            Exit     = $false
         }
-        $testResults = Invoke-Pester @parameter
+        TestResult = @{
+            Enabled      = $true
+            OutputFormat = "NUnitXml"
+            OutputPath   = "$env:BHProjectPath/Test-$OS-$($PSVersionTable.PSVersion.ToString()).xml"
+        }
+        Output     = @{
+            Verbosity = "Normal"
+        }
+    }
 
-        Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) Pester test(s) failed."
+    if ($Tag) {
+        $pesterConfigHash['Filter'] = @{ Tag = $Tag }
     }
-    catch {
-        throw $_
+
+    if ($ExcludeTag) {
+        if (-not $pesterConfigHash.ContainsKey('Filter')) {
+            $pesterConfigHash['Filter'] = @{}
+        }
+        $pesterConfigHash['Filter']['ExcludeTag'] = $ExcludeTag
     }
+
+    $pesterConfiguration = New-PesterConfiguration -Hashtable $pesterConfigHash
+    # $pesterConfiguration.CodeCoverage.Enabled = $true
+    # $pesterConfiguration.CodeCoverage.Path = $codeCoverageFiles.FullName
+
+    $testResults = Invoke-Pester -Configuration $pesterConfiguration
+
+    Assert-True ($testResults.Result -eq "Passed") ("Pester run did not pass. " +
+        "FailedCount=$($testResults.FailedCount); " +
+        "FailedContainersCount=$($testResults.FailedContainersCount); " +
+        "FailedBlocksCount=$($testResults.FailedBlocksCount).")
 }, { Init }
 #endregion
 

@@ -17,8 +17,8 @@ function Get-Sprint {
         $State,
 
         [Parameter( ParameterSetName = '_All' )]
-        [ValidateRange(1, [UInt]::MaxValue)]
-        [UInt]$PageSize = $script:DefaultPageSize,
+        [ValidateRange(1, 4294967295)]
+        [UInt32]$PageSize = $script:DefaultPageSize,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]

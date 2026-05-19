@@ -4,12 +4,12 @@ function Get-Board {
     [OutputType( [AtlassianPS.JiraAgilePS.Board] )]
     param(
         [Parameter( Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_Search' )]
-        [UInt[]]
+        [UInt64[]]
         $BoardId,
 
         [Parameter()]
-        [ValidateRange(1, [UInt]::MaxValue)]
-        [UInt]$PageSize = $script:DefaultPageSize,
+        [ValidateRange(1, 4294967295)]
+        [UInt32]$PageSize = $script:DefaultPageSize,
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
