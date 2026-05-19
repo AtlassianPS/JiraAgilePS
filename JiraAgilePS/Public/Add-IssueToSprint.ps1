@@ -39,7 +39,7 @@ function Add-IssueToSprint {
     end {
         while ($issuesToProcess.Count -gt 0) {
             $thisPageSize = if ($issuesToProcess.Count -lt 50) { $issuesToProcess.Count } else { 50 }
-            $thisIssuePage = Select-Object -InputObject $issuesToProcess -First $thisPageSize
+            $thisIssuePage = @($issuesToProcess | Select-Object -First $thisPageSize)
 
             $requestParameter = @{
                 Uri        = "$($Sprint.Self)/issue"

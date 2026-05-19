@@ -83,6 +83,31 @@ InModuleScope JiraAgilePS {
                 $result.Id | Should -Be 7
                 $result.Name | Should -Be "Target board"
             }
+
+            It "requests each board id with an independent URI when multiple ids are supplied" {
+                Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
+                    [pscustomobject]@{
+                        Id   = 7
+                        Name = "Target board"
+                        Type = "kanban"
+                        Self = "$jiraServer/rest/agile/1.0/board/7"
+                    }
+                }
+
+                $null = Get-JiraAgileBoard -BoardId 7, 8
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 2 -Scope It
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/7" -and
+                    (-not $Paging)
+                }
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/8" -and
+                    (-not $Paging)
+                }
+            }
         }
     }
 }

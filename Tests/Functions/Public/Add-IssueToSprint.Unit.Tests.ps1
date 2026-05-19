@@ -14,6 +14,8 @@ InModuleScope JiraAgilePS {
         }
 
         BeforeEach {
+            $script:postedBodies = [System.Collections.Generic.List[string]]::new()
+
             Mock Get-Sprint -ModuleName JiraAgilePS {
                 [AtlassianPS.JiraAgilePS.Sprint]@{
                     Id   = 99
@@ -23,6 +25,7 @@ InModuleScope JiraAgilePS {
 
             Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
                 param($Uri, $Method, $Body)
+                $null = $script:postedBodies.Add($Body)
             }
         }
 
@@ -85,6 +88,31 @@ InModuleScope JiraAgilePS {
 
                 Should -Invoke -CommandName Get-Sprint -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It
                 Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It
+            }
+
+            It "sends sprint issue payloads in pages of 50 issue keys" {
+                $sprint = [AtlassianPS.JiraAgilePS.Sprint]::new(99)
+                $sprint.Self = [Uri]$sprintUri
+                $issues = @(1..55 | ForEach-Object { [pscustomobject]@{ Key = "AG-$_" } })
+
+                { Add-JiraAgileIssueToSprint -Issue $issues -Sprint $sprint } | Should -Not -Throw
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 2 -Scope It
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 2 -Scope It -ParameterFilter {
+                    $Method -eq "POST" -and
+                    $Uri -eq "$sprintUri/issue"
+                }
+
+                $firstBodyIssues = ($script:postedBodies[0] | ConvertFrom-Json).issues
+                $secondBodyIssues = ($script:postedBodies[1] | ConvertFrom-Json).issues
+
+                @($firstBodyIssues).Count | Should -Be 50
+                $firstBodyIssues[0] | Should -Be "AG-1"
+                $firstBodyIssues[-1] | Should -Be "AG-50"
+
+                @($secondBodyIssues).Count | Should -Be 5
+                $secondBodyIssues[0] | Should -Be "AG-51"
+                $secondBodyIssues[-1] | Should -Be "AG-55"
             }
         }
     }
