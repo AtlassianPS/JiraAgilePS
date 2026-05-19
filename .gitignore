@@ -3,6 +3,7 @@
 # except for git files
 !.devcontainer/
 !.github/
+!.cursor/
 !.vscode/
 !.editorconfig
 !.gitattributes
