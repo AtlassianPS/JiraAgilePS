@@ -13,6 +13,9 @@
     "[shellscript]": {
         "files.eol": "\n"
     },
+    "files.associations": {
+        "*.ps1.template": "powershell"
+    },
     "[markdown]": {
         "editor.tabSize": 2,
         "editor.trimAutoWhitespace": false,
@@ -22,9 +25,10 @@
         "editor.tabSize": 2
     },
     "markdownlint.config": {
-        "MD002": false,
-        "MD041": false,
+        "MD009": false,
         "MD024": false,
+        "MD025": false,
+        "MD028": false
     },
     "cSpell.dictionaryDefinitions": [
         {
@@ -32,9 +36,7 @@
             "path": "./.spelling"
         }
     ],
-    "cSpell.dictionaries": [
-        "customDictionary"
-    ],
+    "cSpell.dictionaries": ["customDictionary"],
     "cSpell.language": "en"
     // Recomendations for "USER SETTINGS":
     // "editor.formatOnType": true,
