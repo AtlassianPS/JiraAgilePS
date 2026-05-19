@@ -53,6 +53,7 @@ Get-Help Get-JiraAgileBoard -Full # or any other command
 ```
 
 For more information on how to use JiraAgilePS, check out the [Documentation](https://atlassianps.org/docs/JiraAgilePS/).
+For release planning context, see the [Jira Agile API coverage matrix](docs/agile-api-coverage-matrix.md).
 
 ### Contribute
 
