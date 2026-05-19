@@ -1,7 +1,7 @@
 # Jira Agile REST API coverage matrix
 
 Issue: [#11](https://github.com/AtlassianPS/JiraAgilePS/issues/11)  
-Last updated: 2026-05-19
+Last updated: 2026-05-20
 
 This document maps Jira Agile REST operations (Cloud + Data Center) to JiraAgilePS cmdlet coverage and locks the first-production-release cmdlet scope.
 
@@ -29,7 +29,7 @@ This document maps Jira Agile REST operations (Cloud + Data Center) to JiraAgile
 | Sprint issue assignment | `POST /sprint/{sprintId}/issue` | Yes | Yes | `Add-JiraAgileIssueToSprint` | Keep (fix defects before GA) | [#12](https://github.com/AtlassianPS/JiraAgilePS/issues/12) |
 | Board issues | `GET /board/{boardId}/issue` | Yes | Yes | None | Add `Get-JiraAgileBoardIssue` | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
 | Backlog issues | `GET /board/{boardId}/backlog` | Yes (deprecated) | Yes | None | Add `Get-JiraAgileBacklogIssue` (document Cloud deprecation) | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
-| Sprint issues | `GET /board/{boardId}/sprint/{sprintId}/issue` and/or `GET /sprint/{sprintId}/issue` | Yes | Yes | None | Add `Get-JiraAgileSprintIssue` | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
+| Sprint issues | `GET /board/{boardId}/sprint/{sprintId}/issue` | Yes | Yes | None | Add `Get-JiraAgileSprintIssue` | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
 | Board configuration | `GET /board/{boardId}/configuration` | Yes | Yes | None | Add `Get-JiraAgileBoardConfiguration` | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
 | Board epics | `GET /board/{boardId}/epic` | Yes | Yes | None | Add `Get-JiraAgileBoardEpic` | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
 | Epic issues (board-scoped) | `GET /board/{boardId}/epic/{epicId}/issue`, `GET /board/{boardId}/epic/none/issue` | Yes | Yes | None | Add `Get-JiraAgileEpicIssue` | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
@@ -39,7 +39,7 @@ This document maps Jira Agile REST operations (Cloud + Data Center) to JiraAgile
 | Sprint swap | `POST /sprint/{sprintId}/swap` | Yes | Yes | None | Defer (operationally risky, lower day-1 value) | [#11](https://github.com/AtlassianPS/JiraAgilePS/issues/11) |
 | Board create/delete | `POST /board`, `DELETE /board/{boardId}` | Yes | Yes | None | Defer (admin permissions + high blast radius) | [#11](https://github.com/AtlassianPS/JiraAgilePS/issues/11) |
 | Board properties | `GET/PUT/DELETE /board/{boardId}/properties/{propertyKey}` | Yes | Yes | None | Defer (app/admin use-case, not first-release core) | [#11](https://github.com/AtlassianPS/JiraAgilePS/issues/11) |
-| Refined velocity settings | `GET/PUT /board/{boardId}/settings/refined-velocity` | Yes | Yes | None | Defer (niche board admin operation) | [#11](https://github.com/AtlassianPS/JiraAgilePS/issues/11) |
+| Refined velocity settings | `GET/PUT /board/{boardId}/settings/refined-velocity` | No | Yes | None | Defer (Data Center-only board admin operation) | [#11](https://github.com/AtlassianPS/JiraAgilePS/issues/11) |
 | Board versions | `GET /board/{boardId}/version` | Yes | Yes | None | Defer (release planning support, lower immediate priority) | [#11](https://github.com/AtlassianPS/JiraAgilePS/issues/11) |
 
 ## First-production-release cmdlet scope lock
