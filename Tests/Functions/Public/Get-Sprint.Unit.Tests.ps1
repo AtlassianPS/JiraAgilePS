@@ -100,22 +100,25 @@ InModuleScope JiraAgilePS {
 
             It "requests each sprint id independently when multiple sprints are supplied" {
                 Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
+                    param($Uri)
+                    $sprintId = [int]($Uri -replace "^.*/", "")
+
                     [pscustomobject]@{
-                        Id            = 21
-                        Name          = "Sprint 21"
+                        Id            = $sprintId
+                        Name          = "Sprint $sprintId"
                         State         = "future"
                         startDate     = "2026-02-01T00:00:00.000Z"
                         endDate       = "2026-02-14T00:00:00.000Z"
                         completeDate  = $null
                         OriginBoardId = 4
                         Goal          = "Prepare"
-                        Self          = "$jiraServer/rest/agile/1.0/sprint/21"
+                        Self          = "$jiraServer/rest/agile/1.0/sprint/$sprintId"
                     }
                 }
                 $sprintA = [AtlassianPS.JiraAgilePS.Sprint]::new(21)
                 $sprintB = [AtlassianPS.JiraAgilePS.Sprint]::new(22)
 
-                $null = Get-JiraAgileSprint -Sprint @($sprintA, $sprintB)
+                $result = Get-JiraAgileSprint -Sprint @($sprintA, $sprintB)
 
                 Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 2 -Scope It
                 Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
@@ -128,6 +131,9 @@ InModuleScope JiraAgilePS {
                     $Uri -eq "$jiraServer/rest/agile/1.0/sprint/22" -and
                     (-not $Paging)
                 }
+                @($result).Count | Should -Be 2
+                (@($result | Select-Object -ExpandProperty Id) -join ",") | Should -Be "21,22"
+                (@($result | Select-Object -ExpandProperty Name) -join ",") | Should -Be "Sprint 21,Sprint 22"
             }
         }
     }

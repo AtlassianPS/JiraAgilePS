@@ -98,6 +98,10 @@ InModuleScope JiraAgilePS {
                 { Add-JiraAgileIssueToSprint -Issue $issues -Sprint $sprint } | Should -Not -Throw
 
                 Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 2 -Scope It
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 2 -Scope It -ParameterFilter {
+                    $Method -eq "POST" -and
+                    $Uri -eq "$sprintUri/issue"
+                }
 
                 $firstBodyIssues = ($script:postedBodies[0] | ConvertFrom-Json).issues
                 $secondBodyIssues = ($script:postedBodies[1] | ConvertFrom-Json).issues
