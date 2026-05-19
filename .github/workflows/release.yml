@@ -48,7 +48,7 @@ jobs:
           path: ./Release/
           if_no_artifact_found: fail
 
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.2
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.6
 
       - name: Publish to PowerShell Gallery
         shell: pwsh
