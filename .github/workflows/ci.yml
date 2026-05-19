@@ -69,7 +69,7 @@ jobs:
       - name: Upload unit test results
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v8
+        uses: actions/upload-artifact@v7
         with:
           name: Windows-PS5-Unit-Tests
           path: Test*.xml
@@ -103,7 +103,7 @@ jobs:
       - name: Upload unit test results
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v8
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}-Unit-Tests
           path: Test*.xml
