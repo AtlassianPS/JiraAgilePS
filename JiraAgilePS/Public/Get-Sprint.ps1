@@ -66,7 +66,7 @@ function Get-Sprint {
             }
             '_ById' {
                 foreach ($_sprint in $Sprint) {
-                    $requestParameter["Uri"] = $resourceUrl_ById -f $Sprint.Id
+                    $requestParameter["Uri"] = $resourceUrl_ById -f $_sprint.Id
                     $requestParameter["GetParameter"] = @{ }
                     $requestParameter["Paging"] = $false
 

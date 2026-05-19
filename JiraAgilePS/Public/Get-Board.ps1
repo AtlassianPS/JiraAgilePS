@@ -55,7 +55,7 @@ function Get-Board {
                     Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing [$_boardId]"
                     Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$_boardId [$_boardId]"
 
-                    $requestParameter['Uri'] += "$resourceUrl/$_boardId"
+                    $requestParameter['Uri'] = "$resourceUrl/$_boardId"
                     $requestParameter['Paging'] = $false
 
                     Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking JiraMethod with `$requestParameter"
