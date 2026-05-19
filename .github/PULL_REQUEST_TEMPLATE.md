@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD002 -->
+<!-- markdownlint-disable MD041 -->
 <!-- Provide a general summary of your changes in the Title above -->
 
 ### Description
@@ -26,3 +28,17 @@
 - [ ] My code follows the code style of this project.
 - [ ] I have added Pester Tests that describe what my changes should do.
 - [ ] I have updated the documentation accordingly.
+- [ ] If I developed on macOS/Linux, I confirmed the Windows PowerShell 5.1 CI lane passed.
+- [ ] If I changed transport/response helper paths, I covered edge cases (request context, session, cache, paging, exception status fallback).
+
+### Cloud / Data Center Compatibility
+
+<!-- JiraPS targets both Jira Cloud and Data Center. If your change touches API endpoints, -->
+<!-- request bodies, or response handling, verify it works for both deployment types. -->
+
+- [ ] This change does **not** affect API endpoints or REST calls (skip items below)
+- [ ] Works on Jira **Cloud** (accountId for users, ADF for text fields, v3 endpoints)
+- [ ] Works on Jira **Data Center** (username/name for users, plain text fields, v2 endpoints)
+- [ ] User identity uses `accountId` for Cloud and `username`/`name` for DC
+- [ ] Text fields (description, comment) handle both ADF (Cloud) and plain text (DC)
+- [ ] Tests cover both Cloud and DC response shapes where applicable
