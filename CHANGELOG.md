@@ -20,6 +20,8 @@
 
 ### Changed
 
+- Harmonized integration test environment setup with JiraPS by adopting `.env.example` and a shared-style `.env` loader/validator in `Tests/Helpers/IntegrationTestTools.ps1`.
+
 ### Fixed
 
 <!-- reference-style links -->

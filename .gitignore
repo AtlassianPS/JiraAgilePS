@@ -9,6 +9,7 @@
 !.gitattributes
 !.gitignore
 !.spelling
+!.env.example
 !Tests/**/.template.ps1
 
 # Ignore configuration files

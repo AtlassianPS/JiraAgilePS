@@ -55,6 +55,16 @@ Get-Help Get-JiraAgileBoard -Full # or any other command
 For more information on how to use JiraAgilePS, check out the [Documentation](https://atlassianps.org/docs/JiraAgilePS/).
 For release planning context, see the [Jira Agile API coverage matrix](docs/agile-api-coverage-matrix.md).
 
+### Integration tests (local)
+
+JiraAgilePS uses the same `.env`-based integration test setup as JiraPS.
+
+1. Copy `.env.example` to `.env` in the repository root.
+2. Fill in the `JIRA_CLOUD_*` and `JIRA_TEST_*` values.
+3. Optionally set `CI_JIRA_TYPE=Server` and `CI_JIRA_*` for Data Center track testing.
+
+The integration helper in `Tests/Helpers/IntegrationTestTools.ps1` reads `.env` and applies the same Cloud/Server variable model used in JiraPS.
+
 ### Contribute
 
 Want to contribute to AtlassianPS? Great!
