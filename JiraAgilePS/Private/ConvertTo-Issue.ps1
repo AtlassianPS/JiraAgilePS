@@ -1,4 +1,12 @@
 function ConvertTo-Issue {
+    <#
+    .SYNOPSIS
+        Converts Jira issue payloads to typed Issue objects.
+
+    .DESCRIPTION
+        Copies all properties from each issue response object and applies the
+        AtlassianPS.JiraAgilePS.Issue typename to preserve rich output typing.
+    #>
     [CmdletBinding()]
     [OutputType([PSObject])]
     param(

@@ -1,4 +1,12 @@
 function ConvertTo-Board {
+    <#
+    .SYNOPSIS
+        Converts Jira Agile board payloads to Board objects.
+
+    .DESCRIPTION
+        Selects the board properties used by JiraAgilePS and casts each
+        pipeline input object to [AtlassianPS.JiraAgilePS.Board].
+    #>
     [CmdletBinding()]
     [OutputType( [AtlassianPS.JiraAgilePS.Board] )]
     param(

@@ -1,4 +1,12 @@
 function ConvertTo-Epic {
+    <#
+    .SYNOPSIS
+        Converts Jira Agile epic payloads to Epic objects.
+
+    .DESCRIPTION
+        Maps API response fields to [AtlassianPS.JiraAgilePS.Epic], including
+        normalization of color values returned as either strings or objects.
+    #>
     [CmdletBinding()]
     [OutputType([AtlassianPS.JiraAgilePS.Epic])]
     param(

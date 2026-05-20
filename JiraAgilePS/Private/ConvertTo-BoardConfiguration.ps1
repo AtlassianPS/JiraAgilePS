@@ -1,4 +1,13 @@
 function ConvertTo-BoardConfiguration {
+    <#
+    .SYNOPSIS
+        Converts board configuration responses to typed objects.
+
+    .DESCRIPTION
+        Clones each response object into a PSCustomObject and applies the
+        AtlassianPS.JiraAgilePS.BoardConfiguration typename for formatting
+        and downstream processing.
+    #>
     [CmdletBinding()]
     [OutputType([PSObject])]
     param(

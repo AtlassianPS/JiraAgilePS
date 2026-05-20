@@ -1,4 +1,13 @@
 function Get-AgilePageItem {
+    <#
+    .SYNOPSIS
+        Expands paged Jira Agile API responses to item objects.
+
+    .DESCRIPTION
+        Unwraps common paged response shapes ('issues' and 'values') and emits
+        contained items. If no known paging property exists, returns the input
+        object unchanged.
+    #>
     [CmdletBinding()]
     [OutputType([PSObject])]
     param(
