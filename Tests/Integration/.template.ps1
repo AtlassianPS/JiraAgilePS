@@ -61,6 +61,10 @@
        hard-coding accountId/username:
            $userIdParam = @{ ($env.UserIdProperty) = $userIdValue }
            Get-JiraUser @userIdParam
+
+    8. ENVIRONMENT SETUP:
+       Copy `.env.example` to `.env` in the repository root and configure
+       `JIRA_CLOUD_*`/`JIRA_TEST_*` (and optional `CI_JIRA_*` for Server track).
 #>
 
 BeforeDiscovery {

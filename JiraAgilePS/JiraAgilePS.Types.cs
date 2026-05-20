@@ -73,5 +73,37 @@ namespace AtlassianPS
                 return Name;
             }
         }
+
+        public class Epic
+        {
+            public Epic(UInt64 value) { Id = value; }
+            public Epic(String value)
+            {
+                UInt64 _id;
+                if (UInt64.TryParse(value, out _id))
+                    Id = _id;
+                else
+                    Name = value;
+            }
+            public Epic() { }
+
+            public UInt64 Id { get; set; }
+            public String Key { get; set; }
+            public String Name { get; set; }
+            public String Summary { get; set; }
+            public String Color { get; set; }
+            public Boolean Done { get; set; }
+            public Uri Self { get; set; }
+
+            public override string ToString()
+            {
+                if (!String.IsNullOrWhiteSpace(Name))
+                    return Name;
+                if (!String.IsNullOrWhiteSpace(Key))
+                    return Key;
+
+                return Id.ToString();
+            }
+        }
     }
 }

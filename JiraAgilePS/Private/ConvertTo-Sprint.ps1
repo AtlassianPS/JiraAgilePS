@@ -1,4 +1,12 @@
 function ConvertTo-Sprint {
+    <#
+    .SYNOPSIS
+        Converts Jira Agile sprint payloads to Sprint objects.
+
+    .DESCRIPTION
+        Projects sprint fields from API responses and normalizes date fields
+        before casting to [AtlassianPS.JiraAgilePS.Sprint].
+    #>
     [CmdletBinding()]
     [OutputType( [AtlassianPS.JiraAgilePS.Sprint] )]
     param(

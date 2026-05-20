@@ -5,10 +5,10 @@ hide: true
 ---
 # JiraAgilePS commands
 
-JiraAgilePS currently provides three commands focused on boards and sprints:
+Read cmdlets added for first-release Agile scope:
 
-- [Get-Board](Get-Board.html)
-- [Get-Sprint](Get-Sprint.html)
-- [Add-IssueToSprint](Add-IssueToSprint.html)
+- [Get-JiraAgileIssue](/docs/JiraAgilePS/commands/Get-JiraAgileIssue/)
+- [Get-JiraAgileBoardConfiguration](/docs/JiraAgilePS/commands/Get-JiraAgileBoardConfiguration/)
+- [Get-JiraAgileEpic](/docs/JiraAgilePS/commands/Get-JiraAgileEpic/)
 
 For module overview and setup, see [about_JiraAgilePS](/docs/JiraAgilePS/).
