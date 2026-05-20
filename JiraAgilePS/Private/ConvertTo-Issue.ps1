@@ -13,6 +13,8 @@ function ConvertTo-Issue {
                 continue
             }
 
+            Write-Debug "[$($MyInvocation.MyCommand.Name)] Converting `$InputObject to AtlassianPS.JiraAgilePS.Issue"
+
             $issue = [PSCustomObject](ConvertTo-Hashtable -InputObject ($object | Select-Object -Property *))
             $issue.PSObject.TypeNames.Insert(0, "AtlassianPS.JiraAgilePS.Issue")
 
@@ -20,4 +22,3 @@ function ConvertTo-Issue {
         }
     }
 }
-

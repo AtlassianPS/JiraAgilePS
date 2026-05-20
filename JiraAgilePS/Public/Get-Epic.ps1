@@ -21,9 +21,13 @@ function Get-Epic {
     }
 
     process {
+        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         foreach ($_epic in $Epic) {
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing [$($_epic.Id)]"
+            Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$_epic [$($_epic.Id)]"
+
             $requestParameter = @{
                 Uri        = $resourceUrl -f $_epic.Id
                 Method     = "GET"
@@ -42,4 +46,3 @@ function Get-Epic {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Complete"
     }
 }
-

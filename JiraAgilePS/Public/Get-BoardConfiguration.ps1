@@ -21,7 +21,10 @@ function Get-BoardConfiguration {
     }
 
     process {
+        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing [$($Board.Id)]"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$Board [$($Board.Id)]"
 
         $requestParameter = @{
             Uri        = $resourceUrl -f $Board.Id
@@ -40,4 +43,3 @@ function Get-BoardConfiguration {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Complete"
     }
 }
-

@@ -13,6 +13,8 @@ function ConvertTo-BoardConfiguration {
                 continue
             }
 
+            Write-Debug "[$($MyInvocation.MyCommand.Name)] Converting `$InputObject to AtlassianPS.JiraAgilePS.BoardConfiguration"
+
             $configuration = [PSCustomObject](ConvertTo-Hashtable -InputObject ($object | Select-Object -Property *))
             $configuration.PSObject.TypeNames.Insert(0, "AtlassianPS.JiraAgilePS.BoardConfiguration")
 
@@ -20,4 +22,3 @@ function ConvertTo-BoardConfiguration {
         }
     }
 }
-

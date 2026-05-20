@@ -13,7 +13,7 @@ function ConvertTo-Epic {
                 continue
             }
 
-            Write-Debug "[$($MyInvocation.MyCommand.Name)] Converting `$object to custom object"
+            Write-Debug "[$($MyInvocation.MyCommand.Name)] Converting `$InputObject to AtlassianPS.JiraAgilePS.Epic"
 
             [AtlassianPS.JiraAgilePS.Epic](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                         Id,
@@ -44,4 +44,3 @@ function ConvertTo-Epic {
         }
     }
 }
-

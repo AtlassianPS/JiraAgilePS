@@ -15,6 +15,7 @@ function Get-AgilePageItem {
 
             $issuesProperty = $object.PSObject.Properties['issues']
             if ($issuesProperty) {
+                Write-Debug "[$($MyInvocation.MyCommand.Name)] Expanding 'issues' property from paged response"
                 foreach ($issue in @($issuesProperty.Value)) {
                     $issue
                 }
@@ -23,14 +24,15 @@ function Get-AgilePageItem {
 
             $valuesProperty = $object.PSObject.Properties['values']
             if ($valuesProperty) {
+                Write-Debug "[$($MyInvocation.MyCommand.Name)] Expanding 'values' property from paged response"
                 foreach ($value in @($valuesProperty.Value)) {
                     $value
                 }
                 continue
             }
 
+            Write-Debug "[$($MyInvocation.MyCommand.Name)] Returning input object without page expansion"
             $object
         }
     }
 }
-

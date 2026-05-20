@@ -29,9 +29,13 @@ function Get-SprintIssue {
     }
 
     process {
+        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         foreach ($_sprint in $Sprint) {
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Sprint ID [$($_sprint.Id)] for Board ID [$($Board.Id)]"
+            Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$_sprint [$($_sprint.Id)]"
+
             $requestParameter = @{
                 Uri          = $resourceUrl -f $Board.Id, $_sprint.Id
                 Method       = "GET"
@@ -59,4 +63,3 @@ function Get-SprintIssue {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Complete"
     }
 }
-

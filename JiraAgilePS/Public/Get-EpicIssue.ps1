@@ -43,6 +43,9 @@ function Get-EpicIssue {
         switch ($PSCmdlet.ParameterSetName) {
             '_Epic' {
                 foreach ($_epic in $Epic) {
+                    Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Epic ID [$($_epic.Id)]"
+                    Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$_epic [$($_epic.Id)]"
+
                     $requestParameter = @{
                         Uri          = $resourceUrlEpic -f $_epic.Id
                         Method       = "GET"
@@ -67,6 +70,9 @@ function Get-EpicIssue {
             }
             '_BoardEpic' {
                 foreach ($_epic in $Epic) {
+                    Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Epic ID [$($_epic.Id)] for Board ID [$($Board.Id)]"
+                    Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$_epic [$($_epic.Id)]"
+
                     $requestParameter = @{
                         Uri          = $resourceUrlBoardEpic -f $Board.Id, $_epic.Id
                         Method       = "GET"
@@ -90,6 +96,9 @@ function Get-EpicIssue {
                 }
             }
             '_BoardNone' {
+                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Board ID [$($Board.Id)] with no epic"
+                Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$Board [$($Board.Id)]"
+
                 $requestParameter = @{
                     Uri          = $resourceUrlBoardWithoutEpic -f $Board.Id
                     Method       = "GET"
@@ -118,4 +127,3 @@ function Get-EpicIssue {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Complete"
     }
 }
-
