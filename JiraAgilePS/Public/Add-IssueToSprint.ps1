@@ -8,6 +8,7 @@ function Add-IssueToSprint {
         $Issue,
 
         [Parameter( Mandatory )]
+        [AtlassianPS.JiraAgilePS.SprintTransformation()]
         [AtlassianPS.JiraAgilePS.Sprint]
         $Sprint,
 

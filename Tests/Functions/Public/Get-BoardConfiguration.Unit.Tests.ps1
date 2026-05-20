@@ -58,6 +58,27 @@ InModuleScope JiraAgilePS {
                 $result.filter.id | Should -Be 10030
                 $result.PSObject.TypeNames[0] | Should -Be "AtlassianPS.JiraAgilePS.BoardConfiguration"
             }
+
+            It "accepts numeric board ids via transformer" {
+                Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
+                    [pscustomobject]@{
+                        id     = 9
+                        name   = "Main board"
+                        type   = "scrum"
+                        filter = [pscustomobject]@{
+                            id   = 10030
+                            self = "$jiraServer/rest/api/2/filter/10030"
+                        }
+                    }
+                }
+
+                $null = Get-JiraAgileBoardConfiguration -Board 9
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/9/configuration"
+                }
+            }
         }
     }
 }

@@ -71,6 +71,25 @@ InModuleScope JiraAgilePS {
                 $result.Name | Should -Be "Sprint 13"
             }
 
+            It "accepts numeric board ids via transformer" {
+                Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
+                    [pscustomobject]@{
+                        Id    = 13
+                        Name  = "Sprint 13"
+                        State = "active"
+                        Self  = "$jiraServer/rest/agile/1.0/sprint/13"
+                    }
+                }
+
+                $null = Get-JiraAgileSprint -Board 4
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/4/sprint" -and
+                    $Paging
+                }
+            }
+
             It "requests sprint details by sprint id" {
                 Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
                     [pscustomobject]@{
@@ -96,6 +115,25 @@ InModuleScope JiraAgilePS {
                 }
                 $result.Id | Should -Be 21
                 $result.Name | Should -Be "Sprint 21"
+            }
+
+            It "accepts numeric sprint ids via transformer" {
+                Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
+                    [pscustomobject]@{
+                        Id    = 21
+                        Name  = "Sprint 21"
+                        State = "future"
+                        Self  = "$jiraServer/rest/agile/1.0/sprint/21"
+                    }
+                }
+
+                $null = Get-JiraAgileSprint -Sprint 21
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/sprint/21" -and
+                    (-not $Paging)
+                }
             }
 
             It "requests each sprint id independently when multiple sprints are supplied" {

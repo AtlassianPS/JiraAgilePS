@@ -69,6 +69,24 @@ InModuleScope JiraAgilePS {
                 (@($result | Select-Object -ExpandProperty Key) -join ",") | Should -Be "EPIC-41,EPIC-42"
             }
 
+            It "accepts numeric epic ids via transformer" {
+                Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
+                    [pscustomobject]@{
+                        id   = 41
+                        key  = "EPIC-41"
+                        name = "Epic 41"
+                        self = "$jiraServer/rest/agile/1.0/epic/41"
+                    }
+                }
+
+                $null = Get-JiraAgileEpic -Epic 41
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/epic/41"
+                }
+            }
+
             It "requests board epics when Board is supplied" {
                 Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
                     [pscustomobject]@{
@@ -104,6 +122,22 @@ InModuleScope JiraAgilePS {
                 $result[0] | Should -BeOfType [AtlassianPS.JiraAgilePS.Epic]
                 $result[0].Name | Should -Be "Epic 31"
                 $result[1].Done | Should -BeTrue
+            }
+
+            It "accepts numeric board ids via transformer" {
+                Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
+                    [pscustomobject]@{
+                        values = @()
+                    }
+                }
+
+                $null = Get-JiraAgileEpic -Board 5
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/5/epic" -and
+                    $Paging
+                }
             }
 
             It "accepts Board from pipeline in board parameter set" {

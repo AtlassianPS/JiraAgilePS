@@ -8,6 +8,7 @@ function Get-Issue {
         [Parameter(Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_Sprint')]
         [Parameter(Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_BoardEpic')]
         [Parameter(Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_BoardWithoutEpic')]
+        [AtlassianPS.JiraAgilePS.BoardTransformation()]
         [AtlassianPS.JiraAgilePS.Board]
         $Board,
 
@@ -16,11 +17,13 @@ function Get-Issue {
         $Backlog,
 
         [Parameter(Position = 1, Mandatory, ValueFromPipeline, ParameterSetName = '_Sprint')]
+        [AtlassianPS.JiraAgilePS.SprintTransformation()]
         [AtlassianPS.JiraAgilePS.Sprint[]]
         $Sprint,
 
         [Parameter(Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_Epic')]
         [Parameter(Position = 1, Mandatory, ValueFromPipeline, ParameterSetName = '_BoardEpic')]
+        [AtlassianPS.JiraAgilePS.EpicTransformation()]
         [AtlassianPS.JiraAgilePS.Epic[]]
         $Epic,
 

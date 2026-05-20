@@ -66,6 +66,16 @@ InModuleScope JiraAgilePS {
                 $result[0].Key | Should -Be "AG-1000"
             }
 
+            It "accepts numeric board ids via transformer" {
+                $null = Get-JiraAgileIssue -Board 7
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/7/issue" -and
+                    $Paging
+                }
+            }
+
             It "uses backlog endpoint when Backlog switch is specified" {
                 $board = [AtlassianPS.JiraAgilePS.Board]::new(8)
 
@@ -100,6 +110,16 @@ InModuleScope JiraAgilePS {
                 @($result).Count | Should -Be 2
             }
 
+            It "accepts numeric sprint ids via transformer" {
+                $null = Get-JiraAgileIssue -Board 9 -Sprint 21
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/9/sprint/21/issue" -and
+                    $Paging
+                }
+            }
+
             It "uses epic endpoint when Epic is supplied without Board" {
                 $epicA = [AtlassianPS.JiraAgilePS.Epic]::new(55)
                 $epicB = [AtlassianPS.JiraAgilePS.Epic]::new(56)
@@ -118,6 +138,16 @@ InModuleScope JiraAgilePS {
                     $Paging
                 }
                 @($result).Count | Should -Be 2
+            }
+
+            It "accepts numeric epic ids via transformer" {
+                $null = Get-JiraAgileIssue -Epic 55
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/epic/55/issue" -and
+                    $Paging
+                }
             }
 
             It "uses board epic endpoint when Board and Epic are supplied" {

@@ -90,6 +90,18 @@ InModuleScope JiraAgilePS {
                 Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It
             }
 
+            It "accepts numeric sprint ids via transformer and resolves sprint details" {
+                $issues = @([pscustomobject]@{ Key = "AG-1" })
+
+                { Add-JiraAgileIssueToSprint -Issue $issues -Sprint 99 } | Should -Not -Throw
+
+                Should -Invoke -CommandName Get-Sprint -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "POST" -and
+                    $Uri -eq "$sprintUri/issue"
+                }
+            }
+
             It "sends sprint issue payloads in pages of 50 issue keys" {
                 $sprint = [AtlassianPS.JiraAgilePS.Sprint]::new(99)
                 $sprint.Self = [Uri]$sprintUri

@@ -21,6 +21,7 @@
 ### Changed
 
 - Harmonized integration test environment setup with JiraPS by adopting `.env.example` and a shared-style `.env` loader/validator in `Tests/Helpers/IntegrationTestTools.ps1`.
+- Added JiraPS-style argument transformers for JiraAgilePS `Board`, `Sprint`, and `Epic` classes so cmdlets accept identifiers (for example numeric IDs) directly where typed class parameters are used.
 
 ### Fixed
 

@@ -4,10 +4,12 @@ function Get-Epic {
     [OutputType([AtlassianPS.JiraAgilePS.Epic])]
     param(
         [Parameter(Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_ById')]
+        [AtlassianPS.JiraAgilePS.EpicTransformation()]
         [AtlassianPS.JiraAgilePS.Epic[]]
         $Epic,
 
         [Parameter(Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_ByBoard')]
+        [AtlassianPS.JiraAgilePS.BoardTransformation()]
         [AtlassianPS.JiraAgilePS.Board]
         $Board,
 

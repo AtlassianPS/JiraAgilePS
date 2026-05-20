@@ -4,11 +4,13 @@ function Get-Sprint {
     [OutputType( [AtlassianPS.JiraAgilePS.Sprint] )]
     param(
         [Parameter( Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_ById' )]
+        [AtlassianPS.JiraAgilePS.SprintTransformation()]
         [AtlassianPS.JiraAgilePS.Sprint[]]
         $Sprint,
 
 
         [Parameter( Position, Mandatory, ValueFromPipeline, ParameterSetName = '_All' )]
+        [AtlassianPS.JiraAgilePS.BoardTransformation()]
         [AtlassianPS.JiraAgilePS.Board]
         $Board,
 

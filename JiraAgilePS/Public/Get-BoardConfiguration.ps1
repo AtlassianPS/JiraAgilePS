@@ -4,6 +4,7 @@ function Get-BoardConfiguration {
     [OutputType([PSObject])]
     param(
         [Parameter(Position = 0, Mandatory, ValueFromPipeline)]
+        [AtlassianPS.JiraAgilePS.BoardTransformation()]
         [AtlassianPS.JiraAgilePS.Board]
         $Board,
 
