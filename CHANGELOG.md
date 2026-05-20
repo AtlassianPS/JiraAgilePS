@@ -1,6 +1,6 @@
 # Change Log
 
-## [NEXT VERSION] - YYYY-MM-DD
+## 0.1 - 2026-05-20
 
 ### Added
 

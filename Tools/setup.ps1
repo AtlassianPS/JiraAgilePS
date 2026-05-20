@@ -40,6 +40,7 @@ Write-Host "Installing InvokeBuild"
 Install-Module InvokeBuild -Scope CurrentUser -Force
 
 Write-Host "Installing Dependencies"
-Invoke-Build -Task InstallDependencies
+Import-Module "$PSScriptRoot/BuildTools.psm1" -Force
+Install-Dependency
 
 Sync-PSScriptAnalyzerSetting

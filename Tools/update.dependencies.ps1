@@ -25,6 +25,8 @@ function Get-LatestModuleVersion {
 }
 
 function Update-ArrayRequirements {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This helper is pure and only returns updated text.')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseSingularNouns', '', Justification = 'Name intentionally denotes processing of multiple requirements.')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -53,6 +55,8 @@ function Update-ArrayRequirements {
 }
 
 function Update-HashtableRequirements {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This helper is pure and only returns updated text.')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseSingularNouns', '', Justification = 'Name intentionally denotes processing of multiple requirements.')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -124,7 +128,7 @@ function Update-DependencyRequirement {
     }
 
     $rawContent = [System.IO.File]::ReadAllText($requirementsPath)
-    $requirements = Invoke-Expression $rawContent
+    $requirements = Import-PowerShellDataFile -Path $requirementsPath
     $newContent = $null
 
     if ($requirements -is [array]) {

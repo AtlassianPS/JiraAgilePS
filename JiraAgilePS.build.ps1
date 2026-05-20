@@ -118,6 +118,80 @@ task ShowInfo Init, GetNextVersion, {
 task ShowDebugInfo ShowInfo
 #endregion DebugInformation
 
+#region Lint
+# Synopsis: Run style checks and PSScriptAnalyzer.
+task Lint Init, {
+    $failures = [System.Collections.Generic.List[String]]::new()
+
+    Write-Build Gray "Running style tests..."
+
+    $pesterConfigHash = @{
+        Run    = @{
+            PassThru = $true
+            Path     = "$env:BHProjectPath/Tests/Style.Tests.ps1"
+        }
+        Output = @{
+            Verbosity = "Normal"
+        }
+    }
+
+    $pesterConfig = New-PesterConfiguration -Hashtable $pesterConfigHash
+    $testResults = Invoke-Pester -Configuration $pesterConfig
+    if ($testResults.FailedCount -gt 0) {
+        $failures.Add("$($testResults.FailedCount) style test(s) failed.")
+    }
+    else {
+        Write-Build Green "Style tests: passed."
+    }
+
+    Write-Build Gray "Running PSScriptAnalyzer..."
+    $projectPath = (Resolve-Path $PSScriptRoot).Path
+    $analyzerRoots = @(
+        (Resolve-Path (Join-Path $projectPath 'JiraAgilePS')).Path
+        (Resolve-Path (Join-Path $projectPath 'Tests')).Path
+        (Resolve-Path (Join-Path $projectPath 'Tools')).Path
+    )
+    $analyzerParams = @{
+        Settings = (Resolve-Path (Join-Path $projectPath 'PSScriptAnalyzerSettings.psd1')).Path
+        Severity = @('Error', 'Warning')
+    }
+
+    $analyzerFiles = @(
+        foreach ($root in $analyzerRoots) {
+            Get-ChildItem -Path $root -Recurse -File -Include *.ps1, *.psm1
+        }
+    )
+    $analyzerFiles += Get-Item (Resolve-Path (Join-Path $projectPath 'JiraAgilePS.build.ps1')).Path
+
+    $results = @(
+        foreach ($file in $analyzerFiles) {
+            try {
+                Invoke-ScriptAnalyzer -Path $file.FullName @analyzerParams
+            }
+            catch {
+                throw "Invoke-ScriptAnalyzer failed for file '$($file.FullName)': $($_.Exception.Message)"
+            }
+        }
+    )
+
+    if ($results.Count -gt 0) {
+        foreach ($result in $results) {
+            $color = if ($result.Severity -eq 'Error') { 'Red' } else { 'Yellow' }
+            $location = if ($result.ScriptName) { $result.ScriptName } else { '<unknown>' }
+            Write-Build $color "[$($result.Severity)] ${location}:$($result.Line) - $($result.RuleName): $($result.Message)"
+        }
+        $failures.Add("$($results.Count) PSScriptAnalyzer issue(s) found.")
+    }
+    else {
+        Write-Build Green "PSScriptAnalyzer: no issues found."
+    }
+
+    if ($failures.Count -gt 0) {
+        throw ("Lint failed:`n  - " + ($failures -join "`n  - "))
+    }
+}
+#endregion Lint
+
 #region BuildRelease
 # Synopsis: Build a shippable release
 task Build Init, GenerateExternalHelp, CopyModuleFiles, UpdateManifest, CompileModule, PrepareTests
@@ -125,18 +199,20 @@ task Build Init, GenerateExternalHelp, CopyModuleFiles, UpdateManifest, CompileM
 # Synopsis: Generate ./Release structure
 task CopyModuleFiles {
     # Setup
-    if (-not (Test-Path "$env:BHBuildOutput/$env:BHProjectName")) {
-        $null = New-Item -Path "$env:BHBuildOutput/$env:BHProjectName" -ItemType Directory
+    $releaseModulePath = "$env:BHBuildOutput/$env:BHProjectName"
+    if (Test-Path $releaseModulePath) {
+        Remove-Item -Path $releaseModulePath -Recurse -Force
     }
+    $null = New-Item -Path $releaseModulePath -ItemType Directory -Force
 
     # Copy module
-    Copy-Item -Path "$env:BHModulePath/*" -Destination "$env:BHBuildOutput/$env:BHProjectName" -Recurse -Force
+    Copy-Item -Path "$env:BHModulePath/*" -Destination $releaseModulePath -Recurse -Force
     # Copy additional files
     Copy-Item -Path @(
         "$env:BHProjectPath/CHANGELOG.md"
         "$env:BHProjectPath/LICENSE"
         "$env:BHProjectPath/README.md"
-    ) -Destination "$env:BHBuildOutput/$env:BHProjectName" -Force
+    ) -Destination $releaseModulePath -Force
 }
 
 # Synopsis: Prepare tests for ./Release
@@ -198,9 +274,38 @@ task GenerateExternalHelp Init, {
     if (-not (Get-Module -Name platyPS)) {
         Import-Module platyPS -Force
     }
+    $utf8Bom = [System.Text.UTF8Encoding]::new($true)
     foreach ($locale in (Get-ChildItem "$env:BHProjectPath/docs" -Attribute Directory)) {
-        New-ExternalHelp -Path "$($locale.FullName)" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
-        New-ExternalHelp -Path "$($locale.FullName)/commands" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
+        $outputPath = "$env:BHModulePath/$($locale.Basename)"
+        $null = New-Item -Path $outputPath -ItemType Directory -Force -ErrorAction SilentlyContinue
+        Get-ChildItem -Path $outputPath -Filter 'about_*.help.txt' -File -ErrorAction SilentlyContinue | Remove-Item -Force
+
+        New-ExternalHelp -Path "$($locale.FullName)/commands" -OutputPath $outputPath -Force
+
+        $aboutCandidates = @(
+            @(Get-ChildItem "$($locale.FullName)/about_*.md" -File -ErrorAction SilentlyContinue)
+            @(Get-ChildItem "$($locale.FullName)/about/*.md" -File -ErrorAction SilentlyContinue)
+            @(Get-Item "$($locale.FullName)/index.md" -ErrorAction SilentlyContinue)
+        ) | Select-Object -Unique
+
+        $topicSources = @{}
+        foreach ($aboutFile in $aboutCandidates) {
+            if (-not $aboutFile) { continue }
+
+            $content = [System.IO.File]::ReadAllText($aboutFile.FullName)
+            $content = $content -replace '\A---\r?\n[\s\S]*?\r?\n---\r?\n?', ''
+
+            $topicMatch = [regex]::Match($content, '(?m)^\s*##\s+(about_[A-Za-z0-9_]+)\s*$')
+            if (-not $topicMatch.Success) { continue }
+            $topicName = $topicMatch.Groups[1].Value
+            if ($topicSources.ContainsKey($topicName)) {
+                throw "Duplicate about topic heading '$topicName' found in '$($topicSources[$topicName])' and '$($aboutFile.FullName)'."
+            }
+            $topicSources[$topicName] = $aboutFile.FullName
+
+            $helpTxtName = "$topicName.help.txt"
+            [System.IO.File]::WriteAllText((Join-Path $outputPath $helpTxtName), $content, $utf8Bom)
+        }
     }
     Remove-Module platyPS
 }
@@ -287,7 +392,7 @@ task Test Init, {
         "FailedCount=$($testResults.FailedCount); " +
         "FailedContainersCount=$($testResults.FailedContainersCount); " +
         "FailedBlocksCount=$($testResults.FailedBlocksCount).")
-}, { Init }
+}, { Invoke-Init }
 #endregion
 
 #region Publish
