@@ -11,9 +11,6 @@ Describe "General project validation" -Tag Unit {
         Remove-Module JiraAgilePS -ErrorAction SilentlyContinue
         $script:manifest = Test-ModuleManifest -Path $moduleToTest -ErrorAction Stop -WarningAction SilentlyContinue
     }
-    AfterEach {
-        Remove-Module JiraAgilePS -ErrorAction SilentlyContinue
-    }
 
     It "passes Test-ModuleManifest" {
         { Test-ModuleManifest -Path $moduleToTest -ErrorAction Stop } | Should -Not -Throw
