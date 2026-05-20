@@ -27,6 +27,8 @@ InModuleScope JiraAgilePS {
                     @{ parameter = "Board"; type = [AtlassianPS.JiraAgilePS.Board] }
                     @{ parameter = "Backlog"; type = [System.Management.Automation.SwitchParameter] }
                     @{ parameter = "Sprint"; type = [AtlassianPS.JiraAgilePS.Sprint[]] }
+                    @{ parameter = "Epic"; type = [AtlassianPS.JiraAgilePS.Epic[]] }
+                    @{ parameter = "WithoutEpic"; type = [System.Management.Automation.SwitchParameter] }
                     @{ parameter = "PageSize"; type = [UInt32] }
                     @{ parameter = "Credential"; type = [System.Management.Automation.PSCredential] }
                 ) {
@@ -97,7 +99,51 @@ InModuleScope JiraAgilePS {
                 }
                 @($result).Count | Should -Be 2
             }
+
+            It "uses epic endpoint when Epic is supplied without Board" {
+                $epicA = [AtlassianPS.JiraAgilePS.Epic]::new(55)
+                $epicB = [AtlassianPS.JiraAgilePS.Epic]::new(56)
+
+                $result = Get-JiraAgileIssue -Epic @($epicA, $epicB)
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 2 -Scope It
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/epic/55/issue" -and
+                    $Paging
+                }
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/epic/56/issue" -and
+                    $Paging
+                }
+                @($result).Count | Should -Be 2
+            }
+
+            It "uses board epic endpoint when Board and Epic are supplied" {
+                $board = [AtlassianPS.JiraAgilePS.Board]::new(8)
+                $epic = [AtlassianPS.JiraAgilePS.Epic]::new(66)
+
+                $null = Get-JiraAgileIssue -Board $board -Epic $epic
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/8/epic/66/issue" -and
+                    $Paging
+                }
+            }
+
+            It "uses board none endpoint when WithoutEpic is used" {
+                $board = [AtlassianPS.JiraAgilePS.Board]::new(8)
+
+                $null = Get-JiraAgileIssue -Board $board -WithoutEpic
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/8/epic/none/issue" -and
+                    $Paging
+                }
+            }
         }
     }
 }
-

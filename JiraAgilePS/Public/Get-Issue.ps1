@@ -6,6 +6,8 @@ function Get-Issue {
         [Parameter(Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_Board')]
         [Parameter(Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_Backlog')]
         [Parameter(Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_Sprint')]
+        [Parameter(Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_BoardEpic')]
+        [Parameter(Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_BoardWithoutEpic')]
         [AtlassianPS.JiraAgilePS.Board]
         $Board,
 
@@ -16,6 +18,15 @@ function Get-Issue {
         [Parameter(Position = 1, Mandatory, ValueFromPipeline, ParameterSetName = '_Sprint')]
         [AtlassianPS.JiraAgilePS.Sprint[]]
         $Sprint,
+
+        [Parameter(Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = '_Epic')]
+        [Parameter(Position = 1, Mandatory, ValueFromPipeline, ParameterSetName = '_BoardEpic')]
+        [AtlassianPS.JiraAgilePS.Epic[]]
+        $Epic,
+
+        [Parameter(Mandatory, ParameterSetName = '_BoardWithoutEpic')]
+        [switch]
+        $WithoutEpic,
 
         [Parameter()]
         [ValidateRange(1, 4294967295)]
@@ -34,6 +45,9 @@ function Get-Issue {
         $resourceUrl_Board = "$server/rest/agile/1.0/board/{0}/issue"
         $resourceUrl_Backlog = "$server/rest/agile/1.0/board/{0}/backlog"
         $resourceUrl_Sprint = "$server/rest/agile/1.0/board/{0}/sprint/{1}/issue"
+        $resourceUrl_Epic = "$server/rest/agile/1.0/epic/{0}/issue"
+        $resourceUrl_BoardEpic = "$server/rest/agile/1.0/board/{0}/epic/{1}/issue"
+        $resourceUrl_BoardWithoutEpic = "$server/rest/agile/1.0/board/{0}/epic/none/issue"
     }
 
     process {
@@ -84,6 +98,34 @@ function Get-Issue {
                     Invoke-JiraMethod @requestParameter | Get-AgilePageItem | ConvertTo-Issue
                 }
             }
+            '_Epic' {
+                foreach ($_epic in $Epic) {
+                    Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Epic ID [$($_epic.Id)]"
+                    Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$_epic [$($_epic.Id)]"
+
+                    $requestParameter["Uri"] = $resourceUrl_Epic -f $_epic.Id
+                    Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking JiraMethod with `$requestParameter"
+                    Invoke-JiraMethod @requestParameter | Get-AgilePageItem | ConvertTo-Issue
+                }
+            }
+            '_BoardEpic' {
+                foreach ($_epic in $Epic) {
+                    Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Epic ID [$($_epic.Id)] for Board ID [$($Board.Id)]"
+                    Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$_epic [$($_epic.Id)]"
+
+                    $requestParameter["Uri"] = $resourceUrl_BoardEpic -f $Board.Id, $_epic.Id
+                    Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking JiraMethod with `$requestParameter"
+                    Invoke-JiraMethod @requestParameter | Get-AgilePageItem | ConvertTo-Issue
+                }
+            }
+            '_BoardWithoutEpic' {
+                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Board ID [$($Board.Id)] with no epic"
+                Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$Board [$($Board.Id)]"
+
+                $requestParameter["Uri"] = $resourceUrl_BoardWithoutEpic -f $Board.Id
+                Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking JiraMethod with `$requestParameter"
+                Invoke-JiraMethod @requestParameter | Get-AgilePageItem | ConvertTo-Issue
+            }
         }
     }
 
@@ -91,4 +133,3 @@ function Get-Issue {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Complete"
     }
 }
-
