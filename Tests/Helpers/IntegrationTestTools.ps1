@@ -112,7 +112,7 @@ function Initialize-IntegrationEnvironment {
         if (-not $global:_JiraAgilePSIntegrationEnvWarned) {
             Write-Warning "Integration tests ($deploymentType track) require the following environment variables: $($missing -join ', ')"
             if ($deploymentType -eq 'Server') {
-                Write-Warning "Set CI_JIRA_TYPE=Server and the CI_JIRA_* vars. See .env.example."
+                Write-Warning "Set CI_JIRA_TYPE=Server and the CI_JIRA_* vars (defaults match the moveworkforward/atlas-run-standalone Docker image). See .env.example."
             }
             else {
                 Write-Warning "Copy .env.example to .env and configure your Jira Cloud connection."
@@ -202,16 +202,18 @@ function Connect-JiraTestServer {
         $secureToken = ConvertTo-SecureString -String $Environment.Password -AsPlainText -Force
         $session = New-JiraSession -ApiToken $secureToken -EmailAddress $Environment.Username
         if (-not $session) {
-            throw "Failed to establish Jira session. For Jira Cloud, JIRA_CLOUD_PASSWORD must be an API token."
+            throw "Failed to establish Jira session. Check credentials and server URL. For Jira Cloud, JIRA_CLOUD_PASSWORD must be an API token (not your account password)."
         }
+        Write-Verbose "Connected to Jira Cloud: $($Environment.CloudUrl)"
     }
     else {
         $authPair = "$($Environment.Username):$($Environment.Password)"
         $basicAuthHeader = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($authPair))
         $session = New-JiraSession -Headers @{ Authorization = $basicAuthHeader }
         if (-not $session) {
-            throw "Failed to establish Jira session for Server track. Check CI_JIRA_* values."
+            throw "Failed to establish Jira session. Check credentials and server URL. For Jira Data Center, CI_JIRA_ADMIN_PASSWORD must be the admin user's password (default: 'admin' for the moveworkforward/atlas-run-standalone image)."
         }
+        Write-Verbose "Connected to Jira Data Center: $($Environment.CloudUrl)"
     }
 
     if (-not $Environment.ReadOnly) {
@@ -352,7 +354,7 @@ function Get-MinimumValidIssueParameter {
         $createmeta = Get-JiraIssueCreateMetadata -Project $Fixtures.TestProject -IssueType $IssueType -ErrorAction Stop -Debug:$false
     }
     catch {
-        Write-Warning "Get-MinimumValidIssueParameter: createmeta probe failed ($($_.Exception.Message)); returning empty extras."
+        Write-Warning "Get-MinimumValidIssueParameter: createmeta probe for project [$($Fixtures.TestProject)] / issuetype [$IssueType] failed ($($_.Exception.Message)); returning empty extras. Jira may still reject the create call if the project tightens any required-no-default field."
         return $result
     }
 
@@ -398,12 +400,12 @@ function Get-MinimumValidIssueParameter {
                     $result.Fields[$field.Id] = @{ name = "$userCandidate" }
                 }
                 else {
-                    Write-Warning "Get-MinimumValidIssueParameter: required user field [$($field.Name)] cannot be defaulted because no test user is configured."
+                    Write-Warning "Get-MinimumValidIssueParameter: required user field [$($field.Name)] (id=[$($field.Id)]) cannot be defaulted because no test user is configured."
                 }
                 break
             }
             default {
-                Write-Warning "Get-MinimumValidIssueParameter: required field [$($field.Name)] has no fallback default; New-JiraIssue may reject the call."
+                Write-Warning "Get-MinimumValidIssueParameter: required field [$($field.Name)] (id=[$($field.Id)], type=[$($field.Schema.type)]) has no AllowedValues, no HasDefaultValue, and no schema-derived default; New-JiraIssue may still reject the create call. Extend Get-MinimumValidIssueParameter in Tests/Helpers/IntegrationTestTools.ps1 to handle this field type."
             }
         }
     }
@@ -446,12 +448,16 @@ function Remove-StaleTestResource {
 
     $cutoffTime = (Get-Date).Add(-$MaxAge)
     $prefix = $script:TestResourcePrefix
+    Write-Verbose "Cleaning up test resources older than $cutoffTime with prefix '$prefix'"
 
     try {
+        # Quote the prefix as a phrase so Jira's text search does not tokenize on '-'
+        # (which would match any of "JiraAgilePS", "IntTest" individually).
         $jql = "project = $($Fixtures.TestProject) AND summary ~ ""\""$prefix\"""" ORDER BY created ASC"
         $staleIssues = Get-JiraIssue -Query $jql -ErrorAction SilentlyContinue
         foreach ($issue in $staleIssues) {
             if ($issue.Created -lt $cutoffTime) {
+                Write-Verbose "Removing stale test issue: $($issue.Key) (created $($issue.Created))"
                 Remove-JiraIssue -IssueId $issue.Key -Force -ErrorAction SilentlyContinue
             }
         }
@@ -464,6 +470,7 @@ function Remove-StaleTestResource {
         $versions = Get-JiraVersion -Project $Fixtures.TestProject -ErrorAction SilentlyContinue
         foreach ($version in $versions) {
             if ($version.Name -like "$prefix*") {
+                Write-Verbose "Removing stale test version: $($version.Name)"
                 Remove-JiraVersion -Version $version -Force -ErrorAction SilentlyContinue
             }
         }
@@ -476,6 +483,7 @@ function Remove-StaleTestResource {
         $filters = Find-JiraFilter -Name $prefix -ErrorAction SilentlyContinue
         foreach ($filter in $filters) {
             if ($filter.Name -like "$prefix*") {
+                Write-Verbose "Removing stale test filter: $($filter.Name)"
                 Remove-JiraFilter -InputObject $filter -ErrorAction SilentlyContinue -Confirm:$false
             }
         }
