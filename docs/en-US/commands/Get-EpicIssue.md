@@ -1,12 +1,12 @@
 ---
 external help file: JiraAgilePS-help.xml
 Module Name: JiraAgilePS
-online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-EpicIssue/
+online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-JiraAgileEpicIssue/
 locale: en-US
 layout: documentation
-permalink: /docs/JiraAgilePS/commands/Get-EpicIssue/
+permalink: /docs/JiraAgilePS/commands/Get-JiraAgileEpicIssue/
 ---
-# Get-EpicIssue
+# Get-JiraAgileEpicIssue
 
 ## SYNOPSIS
 
@@ -17,24 +17,24 @@ Gets issues for an epic, including board-scoped epic issue retrieval.
 ### _Epic (Default)
 
 ```powershell
-Get-EpicIssue [-Epic] <Epic[]> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
+Get-JiraAgileEpicIssue [-Epic] <Epic[]> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
 ### _BoardEpic
 
 ```powershell
-Get-EpicIssue -Epic <Epic[]> -Board <Board> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
+Get-JiraAgileEpicIssue -Epic <Epic[]> -Board <Board> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
 ### _BoardNone
 
 ```powershell
-Get-EpicIssue -Board <Board> -WithoutEpic [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
+Get-JiraAgileEpicIssue -Board <Board> -WithoutEpic [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-`Get-EpicIssue` supports these endpoints:
+`Get-JiraAgileEpicIssue` supports these endpoints:
 
 - `GET /rest/agile/1.0/epic/{epicId}/issue`
 - `GET /rest/agile/1.0/board/{boardId}/epic/{epicId}/issue`
@@ -48,7 +48,7 @@ The command supports paging and converts issue results into JiraAgilePS issue ob
 
 ```powershell
 $epic = [AtlassianPS.JiraAgilePS.Epic]::new(10001)
-JiraAgilePS\Get-EpicIssue -Epic $epic -Credential $cred
+JiraAgilePS\Get-JiraAgileEpicIssue -Epic $epic -Credential $cred
 ```
 
 Returns issues for epic 10001.
@@ -56,9 +56,9 @@ Returns issues for epic 10001.
 ### EXAMPLE 2
 
 ```powershell
-$board = JiraAgilePS\Get-Board -BoardId 7 -Credential $cred
+$board = JiraAgilePS\Get-JiraAgileBoard -BoardId 7 -Credential $cred
 $epic = [AtlassianPS.JiraAgilePS.Epic]::new(10001)
-JiraAgilePS\Get-EpicIssue -Board $board -Epic $epic -Credential $cred
+JiraAgilePS\Get-JiraAgileEpicIssue -Board $board -Epic $epic -Credential $cred
 ```
 
 Returns board-scoped issues for the epic.
@@ -66,8 +66,8 @@ Returns board-scoped issues for the epic.
 ### EXAMPLE 3
 
 ```powershell
-$board = JiraAgilePS\Get-Board -BoardId 7 -Credential $cred
-JiraAgilePS\Get-EpicIssue -Board $board -WithoutEpic -Credential $cred
+$board = JiraAgilePS\Get-JiraAgileBoard -BoardId 7 -Credential $cred
+JiraAgilePS\Get-JiraAgileEpicIssue -Board $board -WithoutEpic -Credential $cred
 ```
 
 Returns board issues that are not assigned to an epic.
@@ -104,6 +104,6 @@ Credentials used for Jira authentication.
 
 ## RELATED LINKS
 
-[Get-Epic](Get-Epic.html)
+[Get-JiraAgileEpic](/docs/JiraAgilePS/commands/Get-JiraAgileEpic/)
 
-[Get-BoardEpic](Get-BoardEpic.html)
+[Get-JiraAgileBoardEpic](/docs/JiraAgilePS/commands/Get-JiraAgileBoardEpic/)

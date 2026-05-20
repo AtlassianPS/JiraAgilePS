@@ -1,12 +1,12 @@
 ---
 external help file: JiraAgilePS-help.xml
 Module Name: JiraAgilePS
-online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-BoardEpic/
+online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-JiraAgileBoardEpic/
 locale: en-US
 layout: documentation
-permalink: /docs/JiraAgilePS/commands/Get-BoardEpic/
+permalink: /docs/JiraAgilePS/commands/Get-JiraAgileBoardEpic/
 ---
-# Get-BoardEpic
+# Get-JiraAgileBoardEpic
 
 ## SYNOPSIS
 
@@ -15,12 +15,12 @@ Gets epics associated with a Jira Agile board.
 ## SYNTAX
 
 ```powershell
-Get-BoardEpic [-Board] <Board> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
+Get-JiraAgileBoardEpic [-Board] <Board> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-`Get-BoardEpic` calls:
+`Get-JiraAgileBoardEpic` calls:
 
 - `GET /rest/agile/1.0/board/{boardId}/epic`
 
@@ -31,8 +31,8 @@ The command supports paging and converts epic results into JiraAgilePS epic obje
 ### EXAMPLE 1
 
 ```powershell
-$board = JiraAgilePS\Get-Board -BoardId 7 -Credential $cred
-JiraAgilePS\Get-BoardEpic -Board $board -Credential $cred
+$board = JiraAgilePS\Get-JiraAgileBoard -BoardId 7 -Credential $cred
+JiraAgilePS\Get-JiraAgileBoardEpic -Board $board -Credential $cred
 ```
 
 Returns epics for board 7.
@@ -61,6 +61,6 @@ Credentials used for Jira authentication.
 
 ## RELATED LINKS
 
-[Get-Epic](Get-Epic.html)
+[Get-JiraAgileEpic](/docs/JiraAgilePS/commands/Get-JiraAgileEpic/)
 
-[Get-EpicIssue](Get-EpicIssue.html)
+[Get-JiraAgileEpicIssue](/docs/JiraAgilePS/commands/Get-JiraAgileEpicIssue/)

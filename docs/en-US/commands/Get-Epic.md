@@ -1,12 +1,12 @@
 ---
 external help file: JiraAgilePS-help.xml
 Module Name: JiraAgilePS
-online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-Epic/
+online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-JiraAgileEpic/
 locale: en-US
 layout: documentation
-permalink: /docs/JiraAgilePS/commands/Get-Epic/
+permalink: /docs/JiraAgilePS/commands/Get-JiraAgileEpic/
 ---
-# Get-Epic
+# Get-JiraAgileEpic
 
 ## SYNOPSIS
 
@@ -15,12 +15,12 @@ Gets details for one or more Jira Agile epics.
 ## SYNTAX
 
 ```powershell
-Get-Epic [-Epic] <Epic[]> [-Credential <PSCredential>] [<CommonParameters>]
+Get-JiraAgileEpic [-Epic] <Epic[]> [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-`Get-Epic` calls:
+`Get-JiraAgileEpic` calls:
 
 - `GET /rest/agile/1.0/epic/{epicId}`
 
@@ -32,7 +32,7 @@ Returns epic details as JiraAgilePS epic objects.
 
 ```powershell
 $epic = [AtlassianPS.JiraAgilePS.Epic]::new(10001)
-JiraAgilePS\Get-Epic -Epic $epic -Credential $cred
+JiraAgilePS\Get-JiraAgileEpic -Epic $epic -Credential $cred
 ```
 
 Returns details for epic 10001.
@@ -57,6 +57,6 @@ Credentials used for Jira authentication.
 
 ## RELATED LINKS
 
-[Get-BoardEpic](Get-BoardEpic.html)
+[Get-JiraAgileBoardEpic](/docs/JiraAgilePS/commands/Get-JiraAgileBoardEpic/)
 
-[Get-EpicIssue](Get-EpicIssue.html)
+[Get-JiraAgileEpicIssue](/docs/JiraAgilePS/commands/Get-JiraAgileEpicIssue/)

@@ -1,12 +1,12 @@
 ---
 external help file: JiraAgilePS-help.xml
 Module Name: JiraAgilePS
-online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-BacklogIssue/
+online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-JiraAgileBacklogIssue/
 locale: en-US
 layout: documentation
-permalink: /docs/JiraAgilePS/commands/Get-BacklogIssue/
+permalink: /docs/JiraAgilePS/commands/Get-JiraAgileBacklogIssue/
 ---
-# Get-BacklogIssue
+# Get-JiraAgileBacklogIssue
 
 ## SYNOPSIS
 
@@ -15,12 +15,12 @@ Gets backlog issues for a Jira Agile board.
 ## SYNTAX
 
 ```powershell
-Get-BacklogIssue [-Board] <Board> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
+Get-JiraAgileBacklogIssue [-Board] <Board> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-`Get-BacklogIssue` calls:
+`Get-JiraAgileBacklogIssue` calls:
 
 - `GET /rest/agile/1.0/board/{boardId}/backlog`
 
@@ -33,8 +33,8 @@ Cloud note: this endpoint is deprecated by Atlassian Cloud; it remains part of t
 ### EXAMPLE 1
 
 ```powershell
-$board = JiraAgilePS\Get-Board -BoardId 7 -Credential $cred
-JiraAgilePS\Get-BacklogIssue -Board $board -Credential $cred
+$board = JiraAgilePS\Get-JiraAgileBoard -BoardId 7 -Credential $cred
+JiraAgilePS\Get-JiraAgileBacklogIssue -Board $board -Credential $cred
 ```
 
 Returns backlog issues for board 7.
@@ -63,6 +63,6 @@ Credentials used for Jira authentication.
 
 ## RELATED LINKS
 
-[Get-Board](Get-Board.html)
+[Get-JiraAgileBoardIssue](/docs/JiraAgilePS/commands/Get-JiraAgileBoardIssue/)
 
-[Get-BoardIssue](Get-BoardIssue.html)
+[Commands index](/docs/JiraAgilePS/commands/)

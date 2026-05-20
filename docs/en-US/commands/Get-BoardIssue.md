@@ -1,12 +1,12 @@
 ---
 external help file: JiraAgilePS-help.xml
 Module Name: JiraAgilePS
-online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-BoardIssue/
+online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-JiraAgileBoardIssue/
 locale: en-US
 layout: documentation
-permalink: /docs/JiraAgilePS/commands/Get-BoardIssue/
+permalink: /docs/JiraAgilePS/commands/Get-JiraAgileBoardIssue/
 ---
-# Get-BoardIssue
+# Get-JiraAgileBoardIssue
 
 ## SYNOPSIS
 
@@ -15,12 +15,12 @@ Gets issues visible on a Jira Agile board.
 ## SYNTAX
 
 ```powershell
-Get-BoardIssue [-Board] <Board> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
+Get-JiraAgileBoardIssue [-Board] <Board> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-`Get-BoardIssue` calls the Jira Agile board issue endpoint:
+`Get-JiraAgileBoardIssue` calls the Jira Agile board issue endpoint:
 
 - `GET /rest/agile/1.0/board/{boardId}/issue`
 
@@ -31,8 +31,8 @@ The command supports paging and converts issue results into JiraAgilePS issue ob
 ### EXAMPLE 1
 
 ```powershell
-$board = JiraAgilePS\Get-Board -BoardId 7 -Credential $cred
-JiraAgilePS\Get-BoardIssue -Board $board -Credential $cred
+$board = JiraAgilePS\Get-JiraAgileBoard -BoardId 7 -Credential $cred
+JiraAgilePS\Get-JiraAgileBoardIssue -Board $board -Credential $cred
 ```
 
 Returns issues for board 7.
@@ -61,6 +61,6 @@ Credentials used for Jira authentication.
 
 ## RELATED LINKS
 
-[Get-Board](Get-Board.html)
+[Get-JiraAgileBacklogIssue](/docs/JiraAgilePS/commands/Get-JiraAgileBacklogIssue/)
 
-[Get-BacklogIssue](Get-BacklogIssue.html)
+[Commands index](/docs/JiraAgilePS/commands/)

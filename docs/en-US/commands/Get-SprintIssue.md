@@ -1,12 +1,12 @@
 ---
 external help file: JiraAgilePS-help.xml
 Module Name: JiraAgilePS
-online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-SprintIssue/
+online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-JiraAgileSprintIssue/
 locale: en-US
 layout: documentation
-permalink: /docs/JiraAgilePS/commands/Get-SprintIssue/
+permalink: /docs/JiraAgilePS/commands/Get-JiraAgileSprintIssue/
 ---
-# Get-SprintIssue
+# Get-JiraAgileSprintIssue
 
 ## SYNOPSIS
 
@@ -15,12 +15,12 @@ Gets issues for one or more sprints on a Jira Agile board.
 ## SYNTAX
 
 ```powershell
-Get-SprintIssue [-Board] <Board> [-Sprint] <Sprint[]> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
+Get-JiraAgileSprintIssue [-Board] <Board> [-Sprint] <Sprint[]> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-`Get-SprintIssue` calls:
+`Get-JiraAgileSprintIssue` calls:
 
 - `GET /rest/agile/1.0/board/{boardId}/sprint/{sprintId}/issue`
 
@@ -31,9 +31,9 @@ The command supports paging and converts issue results into JiraAgilePS issue ob
 ### EXAMPLE 1
 
 ```powershell
-$board = JiraAgilePS\Get-Board -BoardId 7 -Credential $cred
-$sprint = JiraAgilePS\Get-Sprint -Board $board -State Active -Credential $cred | Select-Object -First 1
-JiraAgilePS\Get-SprintIssue -Board $board -Sprint $sprint -Credential $cred
+$board = JiraAgilePS\Get-JiraAgileBoard -BoardId 7 -Credential $cred
+$sprint = JiraAgilePS\Get-JiraAgileSprint -Board $board -State Active -Credential $cred | Select-Object -First 1
+JiraAgilePS\Get-JiraAgileSprintIssue -Board $board -Sprint $sprint -Credential $cred
 ```
 
 Returns issues for the active sprint.
@@ -66,6 +66,6 @@ Credentials used for Jira authentication.
 
 ## RELATED LINKS
 
-[Get-Sprint](Get-Sprint.html)
+[Get-JiraAgileBoardIssue](/docs/JiraAgilePS/commands/Get-JiraAgileBoardIssue/)
 
-[Get-BoardIssue](Get-BoardIssue.html)
+[Commands index](/docs/JiraAgilePS/commands/)

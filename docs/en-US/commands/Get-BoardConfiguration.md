@@ -1,12 +1,12 @@
 ---
 external help file: JiraAgilePS-help.xml
 Module Name: JiraAgilePS
-online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-BoardConfiguration/
+online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-JiraAgileBoardConfiguration/
 locale: en-US
 layout: documentation
-permalink: /docs/JiraAgilePS/commands/Get-BoardConfiguration/
+permalink: /docs/JiraAgilePS/commands/Get-JiraAgileBoardConfiguration/
 ---
-# Get-BoardConfiguration
+# Get-JiraAgileBoardConfiguration
 
 ## SYNOPSIS
 
@@ -15,12 +15,12 @@ Gets configuration details for a Jira Agile board.
 ## SYNTAX
 
 ```powershell
-Get-BoardConfiguration [-Board] <Board> [-Credential <PSCredential>] [<CommonParameters>]
+Get-JiraAgileBoardConfiguration [-Board] <Board> [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-`Get-BoardConfiguration` calls:
+`Get-JiraAgileBoardConfiguration` calls:
 
 - `GET /rest/agile/1.0/board/{boardId}/configuration`
 
@@ -31,8 +31,8 @@ Returns the board configuration payload as a typed JiraAgilePS board configurati
 ### EXAMPLE 1
 
 ```powershell
-$board = JiraAgilePS\Get-Board -BoardId 7 -Credential $cred
-JiraAgilePS\Get-BoardConfiguration -Board $board -Credential $cred
+$board = JiraAgilePS\Get-JiraAgileBoard -BoardId 7 -Credential $cred
+JiraAgilePS\Get-JiraAgileBoardConfiguration -Board $board -Credential $cred
 ```
 
 Returns configuration details for board 7.
@@ -57,4 +57,6 @@ Credentials used for Jira authentication.
 
 ## RELATED LINKS
 
-[Get-Board](Get-Board.html)
+[Get-JiraAgileBoardIssue](/docs/JiraAgilePS/commands/Get-JiraAgileBoardIssue/)
+
+[Commands index](/docs/JiraAgilePS/commands/)
