@@ -41,6 +41,6 @@ Use `-First` for quick script checks and `-PageSize` when tuning API payload siz
 
 # SEE ALSO
 
-- [Get-Board](../commands/Get-Board.html)
-- [Get-Sprint](../commands/Get-Sprint.html)
-- [Add-IssueToSprint](../commands/Add-IssueToSprint.html)
+- [Get-Board](commands/Get-Board.html)
+- [Get-Sprint](commands/Get-Sprint.html)
+- [Add-IssueToSprint](commands/Add-IssueToSprint.html)

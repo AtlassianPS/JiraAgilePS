@@ -284,8 +284,6 @@ task GenerateExternalHelp Init, {
 
         $aboutCandidates = @(
             @(Get-ChildItem "$($locale.FullName)/about_*.md" -File -ErrorAction SilentlyContinue)
-            @(Get-ChildItem "$($locale.FullName)/about/*.md" -File -ErrorAction SilentlyContinue)
-            @(Get-Item "$($locale.FullName)/index.md" -ErrorAction SilentlyContinue)
         ) | Select-Object -Unique
 
         $topicSources = @{}

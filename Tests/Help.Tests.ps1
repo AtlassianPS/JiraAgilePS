@@ -69,8 +69,6 @@ Describe "Help tests" -Tag "Documentation", "Build" {
 
         $aboutDocs = @(
             @(Get-ChildItem "$projectRoot/docs/en-US/about_*.md" -File -ErrorAction SilentlyContinue)
-            @(Get-ChildItem "$projectRoot/docs/en-US/about/*.md" -File -ErrorAction SilentlyContinue)
-            @(Get-Item "$projectRoot/docs/en-US/index.md" -ErrorAction SilentlyContinue)
         ) | Select-Object -Unique
 
         $script:aboutTopicDeclarations = @(

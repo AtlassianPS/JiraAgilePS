@@ -15,8 +15,8 @@ JiraAgilePS uses the same authentication/session model as JiraPS.
 
 # LONG DESCRIPTION
 
-JiraAgilePS does not implement a separate login mechanism. It relies on JiraPS
-for server configuration and authentication.
+JiraAgilePS does not implement a separate login mechanism.
+It relies on JiraPS for server configuration and authentication.
 
 For most automation flows, do this once per session:
 
