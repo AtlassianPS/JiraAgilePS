@@ -27,9 +27,9 @@ This document maps Jira Agile REST operations (Cloud + Data Center) to JiraAgile
 | Boards | `GET /board`, `GET /board/{boardId}` | Yes | Yes | `Get-JiraAgileBoard` | Keep (fix defects before GA) | [#12](https://github.com/AtlassianPS/JiraAgilePS/issues/12) |
 | Sprints | `GET /board/{boardId}/sprint`, `GET /sprint/{sprintId}` | Yes | Yes | `Get-JiraAgileSprint` | Keep (fix defects before GA) | [#12](https://github.com/AtlassianPS/JiraAgilePS/issues/12) |
 | Sprint issue assignment | `POST /sprint/{sprintId}/issue` | Yes | Yes | `Add-JiraAgileIssueToSprint` | Keep (fix defects before GA) | [#12](https://github.com/AtlassianPS/JiraAgilePS/issues/12) |
-| Board issues | `GET /board/{boardId}/issue` | Yes | Yes | None | Add `Get-JiraAgileBoardIssue` | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
-| Backlog issues | `GET /board/{boardId}/backlog` | Yes (deprecated) | Yes | None | Add `Get-JiraAgileBacklogIssue` (document Cloud deprecation) | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
-| Sprint issues | `GET /board/{boardId}/sprint/{sprintId}/issue` | Yes | Yes | None | Add `Get-JiraAgileSprintIssue` | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
+| Board issues | `GET /board/{boardId}/issue` | Yes | Yes | None | Add `Get-JiraAgileIssue` (board parameter set) | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
+| Backlog issues | `GET /board/{boardId}/backlog` | Yes (deprecated) | Yes | None | Add `Get-JiraAgileIssue` (backlog parameter set; document Cloud deprecation) | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
+| Sprint issues | `GET /board/{boardId}/sprint/{sprintId}/issue` | Yes | Yes | None | Add `Get-JiraAgileIssue` (sprint parameter set) | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
 | Board configuration | `GET /board/{boardId}/configuration` | Yes | Yes | None | Add `Get-JiraAgileBoardConfiguration` | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
 | Board epics | `GET /board/{boardId}/epic` | Yes | Yes | None | Add `Get-JiraAgileBoardEpic` | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
 | Epic issues (board-scoped) | `GET /board/{boardId}/epic/{epicId}/issue`, `GET /board/{boardId}/epic/none/issue` | Yes | Yes | None | Add `Get-JiraAgileEpicIssue` | [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13) |
@@ -48,9 +48,7 @@ The first-production-release scope is:
 
 1. Stabilize existing cmdlets in [#12](https://github.com/AtlassianPS/JiraAgilePS/issues/12).
 2. Deliver first-release read cmdlets in [#13](https://github.com/AtlassianPS/JiraAgilePS/issues/13):
-   - `Get-JiraAgileBoardIssue`
-   - `Get-JiraAgileBacklogIssue`
-   - `Get-JiraAgileSprintIssue`
+   - `Get-JiraAgileIssue` (board, backlog, sprint parameter sets)
    - `Get-JiraAgileBoardConfiguration`
    - `Get-JiraAgileBoardEpic`
    - `Get-JiraAgileEpic`

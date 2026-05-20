@@ -57,6 +57,6 @@ Credentials used for Jira authentication.
 
 ## RELATED LINKS
 
-[Get-JiraAgileBoardIssue](/docs/JiraAgilePS/commands/Get-JiraAgileBoardIssue/)
+[Get-JiraAgileIssue](/docs/JiraAgilePS/commands/Get-JiraAgileIssue/)
 
 [Commands index](/docs/JiraAgilePS/commands/)
