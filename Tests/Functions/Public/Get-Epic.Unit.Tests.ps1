@@ -105,6 +105,56 @@ InModuleScope JiraAgilePS {
                 $result[0].Name | Should -Be "Epic 31"
                 $result[1].Done | Should -BeTrue
             }
+
+            It "accepts Board from pipeline in board parameter set" {
+                Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
+                    [pscustomobject]@{
+                        values = @()
+                    }
+                }
+                $board = [AtlassianPS.JiraAgilePS.Board]::new(17)
+
+                $null = $board | Get-JiraAgileEpic
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/17/epic" -and
+                    $Paging
+                }
+            }
+
+            It "forwards paging parameters to Invoke-JiraMethod in board parameter set" {
+                Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
+                    [pscustomobject]@{
+                        values = @()
+                    }
+                }
+                $board = [AtlassianPS.JiraAgilePS.Board]::new(19)
+
+                $null = Get-JiraAgileEpic -Board $board -First 2 -Skip 1
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/19/epic" -and
+                    $Paging -and
+                    $First -eq 2 -and
+                    $Skip -eq 1
+                }
+            }
+
+            It "throws when Epic has no numeric id" {
+                $epic = [AtlassianPS.JiraAgilePS.Epic]::new("my-epic")
+
+                { Get-JiraAgileEpic -Epic $epic } |
+                    Should -Throw "*Epic input must contain a non-zero Id.*"
+            }
+
+            It "throws when Board has no numeric id" {
+                $board = [AtlassianPS.JiraAgilePS.Board]::new("my-board")
+
+                { Get-JiraAgileEpic -Board $board } |
+                    Should -Throw "*Board input must contain a non-zero Id.*"
+            }
         }
     }
 }

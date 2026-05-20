@@ -36,6 +36,10 @@ function Get-Epic {
         switch ($PSCmdlet.ParameterSetName) {
             '_ById' {
                 foreach ($_epic in $Epic) {
+                    if ($_epic.Id -eq 0) {
+                        throw "[$($MyInvocation.MyCommand.Name)] Epic input must contain a non-zero Id."
+                    }
+
                     Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing [$($_epic.Id)]"
                     Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$_epic [$($_epic.Id)]"
 
@@ -53,6 +57,10 @@ function Get-Epic {
                 }
             }
             '_ByBoard' {
+                if ($Board.Id -eq 0) {
+                    throw "[$($MyInvocation.MyCommand.Name)] Board input must contain a non-zero Id."
+                }
+
                 Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Board ID [$($Board.Id)]"
                 Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$Board [$($Board.Id)]"
 

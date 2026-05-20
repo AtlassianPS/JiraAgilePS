@@ -144,6 +144,54 @@ InModuleScope JiraAgilePS {
                     $Paging
                 }
             }
+
+            It "accepts Board from pipeline in backlog parameter set" {
+                $board = [AtlassianPS.JiraAgilePS.Board]::new(11)
+
+                $null = $board | Get-JiraAgileIssue -Backlog
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/11/backlog" -and
+                    $Paging
+                }
+            }
+
+            It "forwards paging parameters to Invoke-JiraMethod" {
+                $board = [AtlassianPS.JiraAgilePS.Board]::new(13)
+
+                $null = Get-JiraAgileIssue -Board $board -First 2 -Skip 1
+
+                Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
+                    $Method -eq "GET" -and
+                    $Uri -eq "$jiraServer/rest/agile/1.0/board/13/issue" -and
+                    $Paging -and
+                    $First -eq 2 -and
+                    $Skip -eq 1
+                }
+            }
+
+            It "throws when Board has no numeric id" {
+                $board = [AtlassianPS.JiraAgilePS.Board]::new("my-board")
+
+                { Get-JiraAgileIssue -Board $board } |
+                    Should -Throw "*Board input must contain a non-zero Id.*"
+            }
+
+            It "throws when Sprint has no numeric id" {
+                $board = [AtlassianPS.JiraAgilePS.Board]::new(9)
+                $sprint = [AtlassianPS.JiraAgilePS.Sprint]::new("my-sprint")
+
+                { Get-JiraAgileIssue -Board $board -Sprint $sprint } |
+                    Should -Throw "*Sprint input must contain a non-zero Id.*"
+            }
+
+            It "throws when Epic has no numeric id" {
+                $epic = [AtlassianPS.JiraAgilePS.Epic]::new("my-epic")
+
+                { Get-JiraAgileIssue -Epic $epic } |
+                    Should -Throw "*Epic input must contain a non-zero Id.*"
+            }
         }
     }
 }

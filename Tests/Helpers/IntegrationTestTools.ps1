@@ -109,7 +109,8 @@ function Initialize-IntegrationEnvironment {
     }
 
     if ($missing.Count -gt 0) {
-        if (-not $global:_JiraAgilePSIntegrationEnvWarned) {
+        $warnedFlag = Get-Variable -Name _JiraAgilePSIntegrationEnvWarned -Scope Global -ErrorAction SilentlyContinue
+        if (-not $warnedFlag -or -not [bool]$warnedFlag.Value) {
             Write-Warning "Integration tests ($deploymentType track) require the following environment variables: $($missing -join ', ')"
             if ($deploymentType -eq 'Server') {
                 Write-Warning "Set CI_JIRA_TYPE=Server and the CI_JIRA_* vars (defaults match the moveworkforward/atlas-run-standalone Docker image). See .env.example."

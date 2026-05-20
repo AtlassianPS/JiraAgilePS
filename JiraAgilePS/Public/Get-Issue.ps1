@@ -73,6 +73,10 @@ function Get-Issue {
 
         switch ($PSCmdlet.ParameterSetName) {
             '_Board' {
+                if ($Board.Id -eq 0) {
+                    throw "[$($MyInvocation.MyCommand.Name)] Board input must contain a non-zero Id."
+                }
+
                 Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Board ID [$($Board.Id)]"
                 Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$Board [$($Board.Id)]"
 
@@ -81,6 +85,10 @@ function Get-Issue {
                 Invoke-JiraMethod @requestParameter | Get-AgilePageItem | ConvertTo-Issue
             }
             '_Backlog' {
+                if ($Board.Id -eq 0) {
+                    throw "[$($MyInvocation.MyCommand.Name)] Board input must contain a non-zero Id."
+                }
+
                 Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Board ID [$($Board.Id)] backlog"
                 Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$Board [$($Board.Id)]"
 
@@ -90,6 +98,13 @@ function Get-Issue {
             }
             '_Sprint' {
                 foreach ($_sprint in $Sprint) {
+                    if ($Board.Id -eq 0) {
+                        throw "[$($MyInvocation.MyCommand.Name)] Board input must contain a non-zero Id."
+                    }
+                    if ($_sprint.Id -eq 0) {
+                        throw "[$($MyInvocation.MyCommand.Name)] Sprint input must contain a non-zero Id."
+                    }
+
                     Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Sprint ID [$($_sprint.Id)] for Board ID [$($Board.Id)]"
                     Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$_sprint [$($_sprint.Id)]"
 
@@ -100,6 +115,10 @@ function Get-Issue {
             }
             '_Epic' {
                 foreach ($_epic in $Epic) {
+                    if ($_epic.Id -eq 0) {
+                        throw "[$($MyInvocation.MyCommand.Name)] Epic input must contain a non-zero Id."
+                    }
+
                     Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Epic ID [$($_epic.Id)]"
                     Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$_epic [$($_epic.Id)]"
 
@@ -110,6 +129,13 @@ function Get-Issue {
             }
             '_BoardEpic' {
                 foreach ($_epic in $Epic) {
+                    if ($Board.Id -eq 0) {
+                        throw "[$($MyInvocation.MyCommand.Name)] Board input must contain a non-zero Id."
+                    }
+                    if ($_epic.Id -eq 0) {
+                        throw "[$($MyInvocation.MyCommand.Name)] Epic input must contain a non-zero Id."
+                    }
+
                     Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Epic ID [$($_epic.Id)] for Board ID [$($Board.Id)]"
                     Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$_epic [$($_epic.Id)]"
 
@@ -119,6 +145,10 @@ function Get-Issue {
                 }
             }
             '_BoardWithoutEpic' {
+                if ($Board.Id -eq 0) {
+                    throw "[$($MyInvocation.MyCommand.Name)] Board input must contain a non-zero Id."
+                }
+
                 Write-Verbose "[$($MyInvocation.MyCommand.Name)] Processing Board ID [$($Board.Id)] with no epic"
                 Write-Debug "[$($MyInvocation.MyCommand.Name)] Processing `$Board [$($Board.Id)]"
 
