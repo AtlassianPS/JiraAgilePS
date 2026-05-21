@@ -247,6 +247,9 @@ Task GenerateExternalHelp -Inputs {
                     Write-Warning "PlatyPS v1 command-help import failed for '$($locale.Basename)'; falling back to platyPS 0.14.2. $($_.Exception.Message)"
                     $legacyScript = @"
 `$ErrorActionPreference = 'Stop'
+if (-not (Get-Module -ListAvailable -Name platyPS | Where-Object { `$_.Version -eq [Version]'0.14.2' })) {
+    Install-Module platyPS -RequiredVersion '0.14.2' -Scope CurrentUser -Force -AllowClobber
+}
 Import-Module platyPS -RequiredVersion '0.14.2' -Force
 New-ExternalHelp -Path '$($locale.FullName)/commands' -OutputPath '$outputPath' -Force
 "@
