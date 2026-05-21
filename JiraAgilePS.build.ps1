@@ -156,91 +156,106 @@ Task GenerateExternalHelp -Inputs {
                 Where-Object { $_.Name -ne 'index.md' -and $_.Name -notlike 'about_*.md' }
 
             if ($commandHelpFiles) {
-                $commandHelp = @($commandHelpFiles | Import-MarkdownCommandHelp)
-                $commandHelp | Export-MamlCommandHelp -OutputFolder $outputPath -Force
+                try {
+                    $commandHelp = @($commandHelpFiles | Import-MarkdownCommandHelp)
+                    $commandHelp | Export-MamlCommandHelp -OutputFolder $outputPath -Force
 
-                $nestedPath = Join-Path $outputPath $env:BHProjectName
-                if (Test-Path $nestedPath) {
-                    Get-ChildItem $nestedPath -Filter '*.xml' | Move-Item -Destination $outputPath -Force
-                    Remove-Item $nestedPath -Recurse -Force
-                }
-
-                $mamlFile = Join-Path $outputPath "$env:BHProjectName-help.xml"
-                Assert-True (Test-Path $mamlFile) "Expected MAML help file was not created: $mamlFile"
-
-                $xml = [xml](Get-Content $mamlFile -Raw)
-                $ns = [System.Xml.XmlNamespaceManager]::new($xml.NameTable)
-                $ns.AddNamespace('command', 'http://schemas.microsoft.com/maml/dev/command/2004/10')
-                $ns.AddNamespace('dev', 'http://schemas.microsoft.com/maml/dev/2004/10')
-                $ns.AddNamespace('maml', 'http://schemas.microsoft.com/maml/2004/10')
-                foreach ($help in $commandHelp) {
-                    $cmdNode = $xml.SelectSingleNode("//command:command[command:details/command:name='$($help.Title)']", $ns)
-                    if (-not $cmdNode) { continue }
-
-                    $exNodes = @($cmdNode.SelectNodes('command:examples/command:example', $ns))
-                    for ($i = 0; $i -lt $exNodes.Count -and $i -lt $help.Examples.Count; $i++) {
-                        $ex = $exNodes[$i]
-                        $remarksMd = $help.Examples[$i].Remarks
-                        if (-not $remarksMd) { continue }
-                        $codeText = ''
-                        $proseText = $remarksMd
-                        $fence = [regex]::Match($remarksMd, '(?s)```[a-zA-Z0-9_+\-]*\r?\n(.*?)\r?\n```')
-                        if ($fence.Success) {
-                            $codeText = $fence.Groups[1].Value.TrimEnd()
-                            $proseText = ($remarksMd.Substring(0, $fence.Index) + $remarksMd.Substring($fence.Index + $fence.Length)).Trim()
-                        }
-                        $intro = $ex.SelectSingleNode('maml:introduction', $ns)
-                        if ($intro) { [void]$ex.RemoveChild($intro) }
-                        $codeNode = $ex.SelectSingleNode('dev:code', $ns)
-                        if (-not $codeNode) {
-                            $codeNode = $xml.CreateElement('dev', 'code', 'http://schemas.microsoft.com/maml/dev/2004/10')
-                            [void]$ex.AppendChild($codeNode)
-                        }
-                        $codeNode.InnerText = $codeText
-                        $remarksNode = $ex.SelectSingleNode('dev:remarks', $ns)
-                        if (-not $remarksNode) {
-                            $remarksNode = $xml.CreateElement('dev', 'remarks', 'http://schemas.microsoft.com/maml/dev/2004/10')
-                            [void]$ex.AppendChild($remarksNode)
-                        }
-                        while ($remarksNode.HasChildNodes) { [void]$remarksNode.RemoveChild($remarksNode.FirstChild) }
-                        foreach ($para in ($proseText -split "\r?\n\r?\n")) {
-                            if (-not $para.Trim()) { continue }
-                            $pn = $xml.CreateElement('maml', 'para', 'http://schemas.microsoft.com/maml/2004/10')
-                            $pn.InnerText = $para
-                            [void]$remarksNode.AppendChild($pn)
-                        }
+                    $nestedPath = Join-Path $outputPath $env:BHProjectName
+                    if (Test-Path $nestedPath) {
+                        Get-ChildItem $nestedPath -Filter '*.xml' | Move-Item -Destination $outputPath -Force
+                        Remove-Item $nestedPath -Recurse -Force
                     }
 
-                    $paramMap = @{}
-                    foreach ($p in $help.Parameters) { $paramMap[$p.Name] = $p }
-                    foreach ($pNode in $cmdNode.SelectNodes('.//command:parameter', $ns)) {
-                        $pName = $pNode.SelectSingleNode('maml:name', $ns).InnerText
-                        if (-not $paramMap.ContainsKey($pName)) { continue }
-                        $p = $paramMap[$pName]
-                        $aliasText = if ($p.Aliases) { $p.Aliases -join ', ' } else { 'none' }
-                        $pNode.SetAttribute('aliases', $aliasText)
-                        $byVal = $false; $byName = $false
-                        foreach ($set in $p.ParameterSets) {
-                            if ($set.ValueFromPipeline) { $byVal = $true }
-                            if ($set.ValueFromPipelineByPropertyName) { $byName = $true }
+                    $mamlFile = Join-Path $outputPath "$env:BHProjectName-help.xml"
+                    Assert-True (Test-Path $mamlFile) "Expected MAML help file was not created: $mamlFile"
+
+                    $xml = [xml](Get-Content $mamlFile -Raw)
+                    $ns = [System.Xml.XmlNamespaceManager]::new($xml.NameTable)
+                    $ns.AddNamespace('command', 'http://schemas.microsoft.com/maml/dev/command/2004/10')
+                    $ns.AddNamespace('dev', 'http://schemas.microsoft.com/maml/dev/2004/10')
+                    $ns.AddNamespace('maml', 'http://schemas.microsoft.com/maml/2004/10')
+                    foreach ($help in $commandHelp) {
+                        $cmdNode = $xml.SelectSingleNode("//command:command[command:details/command:name='$($help.Title)']", $ns)
+                        if (-not $cmdNode) { continue }
+
+                        $exNodes = @($cmdNode.SelectNodes('command:examples/command:example', $ns))
+                        for ($i = 0; $i -lt $exNodes.Count -and $i -lt $help.Examples.Count; $i++) {
+                            $ex = $exNodes[$i]
+                            $remarksMd = $help.Examples[$i].Remarks
+                            if (-not $remarksMd) { continue }
+                            $codeText = ''
+                            $proseText = $remarksMd
+                            $fence = [regex]::Match($remarksMd, '(?s)```[a-zA-Z0-9_+\-]*\r?\n(.*?)\r?\n```')
+                            if ($fence.Success) {
+                                $codeText = $fence.Groups[1].Value.TrimEnd()
+                                $proseText = ($remarksMd.Substring(0, $fence.Index) + $remarksMd.Substring($fence.Index + $fence.Length)).Trim()
+                            }
+                            $intro = $ex.SelectSingleNode('maml:introduction', $ns)
+                            if ($intro) { [void]$ex.RemoveChild($intro) }
+                            $codeNode = $ex.SelectSingleNode('dev:code', $ns)
+                            if (-not $codeNode) {
+                                $codeNode = $xml.CreateElement('dev', 'code', 'http://schemas.microsoft.com/maml/dev/2004/10')
+                                [void]$ex.AppendChild($codeNode)
+                            }
+                            $codeNode.InnerText = $codeText
+                            $remarksNode = $ex.SelectSingleNode('dev:remarks', $ns)
+                            if (-not $remarksNode) {
+                                $remarksNode = $xml.CreateElement('dev', 'remarks', 'http://schemas.microsoft.com/maml/dev/2004/10')
+                                [void]$ex.AppendChild($remarksNode)
+                            }
+                            while ($remarksNode.HasChildNodes) { [void]$remarksNode.RemoveChild($remarksNode.FirstChild) }
+                            foreach ($para in ($proseText -split "\r?\n\r?\n")) {
+                                if (-not $para.Trim()) { continue }
+                                $pn = $xml.CreateElement('maml', 'para', 'http://schemas.microsoft.com/maml/2004/10')
+                                $pn.InnerText = $para
+                                [void]$remarksNode.AppendChild($pn)
+                            }
                         }
-                        $pipelineText = if ($byVal -and $byName) {
-                            'True (ByValue, ByPropertyName)'
-                        }
-                        elseif ($byVal) { 'True (ByValue)' }
-                        elseif ($byName) { 'True (ByPropertyName)' }
-                        else { 'False' }
-                        $pNode.SetAttribute('pipelineInput', $pipelineText)
-                        if ($pNode.ParentNode.LocalName -eq 'parameters' -and $p.DefaultValue) {
-                            $existing = $pNode.SelectSingleNode('dev:defaultValue', $ns)
-                            if ($existing) { $pNode.RemoveChild($existing) | Out-Null }
-                            $dv = $xml.CreateElement('dev', 'defaultValue', 'http://schemas.microsoft.com/maml/dev/2004/10')
-                            $dv.InnerText = $p.DefaultValue
-                            $null = $pNode.AppendChild($dv)
+
+                        $paramMap = @{}
+                        foreach ($p in $help.Parameters) { $paramMap[$p.Name] = $p }
+                        foreach ($pNode in $cmdNode.SelectNodes('.//command:parameter', $ns)) {
+                            $pName = $pNode.SelectSingleNode('maml:name', $ns).InnerText
+                            if (-not $paramMap.ContainsKey($pName)) { continue }
+                            $p = $paramMap[$pName]
+                            $aliasText = if ($p.Aliases) { $p.Aliases -join ', ' } else { 'none' }
+                            $pNode.SetAttribute('aliases', $aliasText)
+                            $byVal = $false; $byName = $false
+                            foreach ($set in $p.ParameterSets) {
+                                if ($set.ValueFromPipeline) { $byVal = $true }
+                                if ($set.ValueFromPipelineByPropertyName) { $byName = $true }
+                            }
+                            $pipelineText = if ($byVal -and $byName) {
+                                'True (ByValue, ByPropertyName)'
+                            }
+                            elseif ($byVal) { 'True (ByValue)' }
+                            elseif ($byName) { 'True (ByPropertyName)' }
+                            else { 'False' }
+                            $pNode.SetAttribute('pipelineInput', $pipelineText)
+                            if ($pNode.ParentNode.LocalName -eq 'parameters' -and $p.DefaultValue) {
+                                $existing = $pNode.SelectSingleNode('dev:defaultValue', $ns)
+                                if ($existing) { $pNode.RemoveChild($existing) | Out-Null }
+                                $dv = $xml.CreateElement('dev', 'defaultValue', 'http://schemas.microsoft.com/maml/dev/2004/10')
+                                $dv.InnerText = $p.DefaultValue
+                                $null = $pNode.AppendChild($dv)
+                            }
                         }
                     }
+                    $xml.Save($mamlFile)
                 }
-                $xml.Save($mamlFile)
+                catch {
+                    Write-Warning "PlatyPS v1 command-help import failed for '$($locale.Basename)'; falling back to platyPS 0.14.2. $($_.Exception.Message)"
+                    $legacyScript = @"
+`$ErrorActionPreference = 'Stop'
+Import-Module platyPS -RequiredVersion '0.14.2' -Force
+New-ExternalHelp -Path '$($locale.FullName)/commands' -OutputPath '$outputPath' -Force
+"@
+                    $legacyEncoded = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($legacyScript))
+                    & pwsh -NoLogo -NonInteractive -NoProfile -EncodedCommand $legacyEncoded
+                    Assert-True ($LASTEXITCODE -eq 0) "Legacy platyPS help generation failed for locale '$($locale.Basename)'."
+                    $mamlFile = Join-Path $outputPath "$env:BHProjectName-help.xml"
+                    Assert-True (Test-Path $mamlFile) "Expected MAML help file was not created: $mamlFile"
+                }
             }
 
             $utf8Bom = [System.Text.UTF8Encoding]::new($true)
