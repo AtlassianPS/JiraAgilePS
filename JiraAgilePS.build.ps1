@@ -225,7 +225,8 @@ task UpdateManifest GetNextVersion, {
 }
 
 # Synopsis: Create a ZIP file with this build
-task Package Init, EnsureReleaseStandardsModule, {
+task Package Init, {
+    Import-Module AtlassianPS.Standards -RequiredVersion 0.1.6 -ErrorAction Stop
     $null = New-AtlassianPSModulePackage -BuildOutputPath $env:BHBuildOutput -ModuleName $env:BHProjectName
 }
 #endregion BuildRelease
@@ -329,15 +330,12 @@ task SetVersion {
     }
 }
 
-task EnsureReleaseStandardsModule {
-    Import-Module AtlassianPS.Standards -RequiredVersion 0.1.6 -ErrorAction Stop
-}
-
 # Synopsis: Publish prepared release artifacts to PSGallery and package zip.
-task Publish Init, EnsureReleaseStandardsModule, SetVersion, Package, {
+task Publish Init, SetVersion, Package, {
     Assert-True (-not [String]::IsNullOrEmpty($PSGalleryAPIKey)) "No key for the PSGallery"
     Assert-True { Test-Path "$env:BHBuildOutput/$env:BHProjectName" } "Missing files to publish"
 
+    Import-Module AtlassianPS.Standards -RequiredVersion 0.1.6 -ErrorAction Stop
     Publish-AtlassianPSModuleRelease -BuildOutputPath $env:BHBuildOutput -ModuleName $env:BHProjectName -ApiKey $PSGalleryAPIKey
 }
 
