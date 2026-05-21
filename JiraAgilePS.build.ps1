@@ -6,6 +6,7 @@
 param(
     [String[]]$Tag,
     [String[]]$ExcludeTag = @("Integration"),
+    [String]$VersionToPublish,
     [String]$PSGalleryAPIKey,
     [String]$GithubAccessToken
 )
@@ -16,6 +17,9 @@ if ($PSBoundParameters.ContainsKey('Verbose')) {
 }
 if ($PSBoundParameters.ContainsKey('Debug')) {
     $DebugPreference = "Continue"
+}
+if ($VersionToPublish) {
+    $VersionToPublish = $VersionToPublish.TrimStart('v')
 }
 
 try {
@@ -293,6 +297,48 @@ task Test Init, {
 #region Publish
 # Synopsis: Publish a new release on github and the PSGallery
 task Deploy Init, PublishToGallery, TagReplository, UpdateHomepage
+
+# Synopsis: Set the module manifest version from the release tag.
+task SetVersion {
+    Assert-True (-not [String]::IsNullOrWhiteSpace($VersionToPublish)) "VersionToPublish is required for Publish."
+    [System.Management.Automation.SemanticVersion]$versionToPublish = $VersionToPublish
+
+    $published = Find-Module -Name $env:BHProjectName -ErrorAction SilentlyContinue
+    if ($published) {
+        [System.Management.Automation.SemanticVersion]$latestPublished = $published.Version
+        Write-Build Gray "Latest published version: $latestPublished"
+        Assert-True { $versionToPublish -gt $latestPublished } "Version must be greater than latest published version: $latestPublished"
+    }
+    else {
+        Write-Build Gray "No published version found in PSGallery; skipping version guard"
+    }
+
+    $manifestPath = "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1"
+    Assert-True (Test-Path $manifestPath) "Built module manifest was not found: $manifestPath"
+
+    $versionString = "{0}.{1}.{2}" -f $versionToPublish.Major, $versionToPublish.Minor, $versionToPublish.Patch
+    if ($versionToPublish.PreReleaseLabel) {
+        Write-Build Gray "Setting Prerelease label: $($versionToPublish.PreReleaseLabel)"
+        Update-ModuleManifest -Path $manifestPath -ModuleVersion $versionString -Prerelease $versionToPublish.PreReleaseLabel
+    }
+    else {
+        Write-Build Gray "Removing Prerelease label (stable release)"
+        Update-ModuleManifest -Path $manifestPath -ModuleVersion $versionString
+
+        $manifestContent = Get-Content -Path $manifestPath -Raw
+        $manifestContent = $manifestContent -replace "(?m)^\s*Prerelease\s*=\s*'[^']*'\r?\n", ""
+        Set-Content -Path $manifestPath -Value $manifestContent -Encoding UTF8 -Force
+        Remove-Utf8Bom -Path $manifestPath
+    }
+}
+
+# Synopsis: Publish prepared release artifacts to PSGallery and package zip.
+task Publish Init, SetVersion, Package, {
+    Assert-True (-not [String]::IsNullOrEmpty($PSGalleryAPIKey)) "No key for the PSGallery"
+    Assert-True { Test-Path "$env:BHBuildOutput/$env:BHProjectName" } "Missing files to publish"
+
+    Publish-Module -Path "$env:BHBuildOutput/$env:BHProjectName" -NuGetApiKey $PSGalleryAPIKey
+}
 
 # Synpsis: Publish the $release to the PSGallery
 task PublishToGallery {

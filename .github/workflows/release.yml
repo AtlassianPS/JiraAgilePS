@@ -50,17 +50,10 @@ jobs:
 
       - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.6
 
-      - name: Publish to PowerShell Gallery
+      - name: Publish module
+        run: Invoke-Build -Task Publish -VersionToPublish ${{ steps.release_ref.outputs.release_tag }}
+          -PSGalleryAPIKey ${{ secrets.PSGALLERY_API_KEY }}
         shell: pwsh
-        run: |
-          Import-Module AtlassianPS.Standards -RequiredVersion 0.1.2 -ErrorAction Stop
-          Publish-AtlassianPSModuleRelease -BuildOutputPath ./Release -ModuleName JiraAgilePS -ApiKey ${{ secrets.PSGALLERY_API_KEY }}
-
-      - name: Package release zip
-        shell: pwsh
-        run: |
-          Import-Module AtlassianPS.Standards -RequiredVersion 0.1.2 -ErrorAction Stop
-          $null = New-AtlassianPSModulePackage -BuildOutputPath ./Release -ModuleName JiraAgilePS
 
       - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v3
