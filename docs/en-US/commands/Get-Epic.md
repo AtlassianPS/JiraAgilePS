@@ -1,10 +1,10 @@
 ---
 external help file: JiraAgilePS-help.xml
 Module Name: JiraAgilePS
-online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-JiraAgileEpic/
+online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-Epic/
 locale: en-US
 layout: documentation
-permalink: /docs/JiraAgilePS/commands/Get-JiraAgileEpic/
+permalink: /docs/JiraAgilePS/commands/Get-Epic/
 ---
 # Get-JiraAgileEpic
 

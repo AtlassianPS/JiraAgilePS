@@ -8,8 +8,9 @@ BeforeDiscovery {
 
 Describe "General project validation" -Tag Unit {
     BeforeAll {
-        Remove-Module JiraAgilePS -ErrorAction SilentlyContinue
+        . "$PSScriptRoot/Helpers/TestTools.ps1"
         $script:manifest = Test-ModuleManifest -Path $moduleToTest -ErrorAction Stop -WarningAction SilentlyContinue
+        Initialize-TestEnvironment | Out-Null
     }
 
     It "passes Test-ModuleManifest" {

@@ -1,10 +1,10 @@
 ---
 external help file: JiraAgilePS-help.xml
 Module Name: JiraAgilePS
-online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-JiraAgileIssue/
+online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-Issue/
 locale: en-US
 layout: documentation
-permalink: /docs/JiraAgilePS/commands/Get-JiraAgileIssue/
+permalink: /docs/JiraAgilePS/commands/Get-Issue/
 ---
 # Get-JiraAgileIssue
 

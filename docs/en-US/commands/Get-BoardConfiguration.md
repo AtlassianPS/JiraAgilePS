@@ -1,10 +1,10 @@
 ---
 external help file: JiraAgilePS-help.xml
 Module Name: JiraAgilePS
-online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-JiraAgileBoardConfiguration/
+online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-BoardConfiguration/
 locale: en-US
 layout: documentation
-permalink: /docs/JiraAgilePS/commands/Get-JiraAgileBoardConfiguration/
+permalink: /docs/JiraAgilePS/commands/Get-BoardConfiguration/
 ---
 # Get-JiraAgileBoardConfiguration
 
