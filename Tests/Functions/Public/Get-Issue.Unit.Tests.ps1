@@ -6,8 +6,12 @@ BeforeDiscovery {
     $script:moduleToTest = Initialize-TestEnvironment
 }
 
-InModuleScope JiraAgilePS {
-    Describe "Get-JiraAgileIssue" -Tag 'Unit' {
+BeforeAll {
+    . "$PSScriptRoot/../../Helpers/TestTools.ps1"
+    $script:moduleToTest = Initialize-TestEnvironment
+}
+
+Describe "Get-JiraAgileIssue" -Tag 'Unit' {
         BeforeAll {
             . "$PSScriptRoot/../../Helpers/TestTools.ps1"
             $script:jiraServer = "https://jira.example.com"
@@ -193,5 +197,4 @@ InModuleScope JiraAgilePS {
                     Should -Throw "*Epic input must contain a non-zero Id.*"
             }
         }
-    }
 }

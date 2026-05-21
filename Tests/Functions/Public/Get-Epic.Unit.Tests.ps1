@@ -6,8 +6,12 @@ BeforeDiscovery {
     $script:moduleToTest = Initialize-TestEnvironment
 }
 
-InModuleScope JiraAgilePS {
-    Describe "Get-JiraAgileEpic" -Tag 'Unit' {
+BeforeAll {
+    . "$PSScriptRoot/../../Helpers/TestTools.ps1"
+    $script:moduleToTest = Initialize-TestEnvironment
+}
+
+Describe "Get-JiraAgileEpic" -Tag 'Unit' {
         BeforeAll {
             . "$PSScriptRoot/../../Helpers/TestTools.ps1"
             $script:jiraServer = "https://jira.example.com"
@@ -156,5 +160,4 @@ InModuleScope JiraAgilePS {
                     Should -Throw "*Board input must contain a non-zero Id.*"
             }
         }
-    }
 }
