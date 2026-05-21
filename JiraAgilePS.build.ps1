@@ -244,20 +244,7 @@ Task GenerateExternalHelp -Inputs {
                     $xml.Save($mamlFile)
                 }
                 catch {
-                    Write-Warning "PlatyPS v1 command-help import failed for '$($locale.Basename)'; falling back to platyPS 0.14.2. $($_.Exception.Message)"
-                    $legacyScript = @"
-`$ErrorActionPreference = 'Stop'
-if (-not (Get-Module -ListAvailable -Name platyPS | Where-Object { `$_.Version -eq [Version]'0.14.2' })) {
-    Install-Module platyPS -RequiredVersion '0.14.2' -Scope CurrentUser -Force -AllowClobber
-}
-Import-Module platyPS -RequiredVersion '0.14.2' -Force
-New-ExternalHelp -Path '$($locale.FullName)/commands' -OutputPath '$outputPath' -Force
-"@
-                    $legacyEncoded = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($legacyScript))
-                    & pwsh -NoLogo -NonInteractive -NoProfile -EncodedCommand $legacyEncoded
-                    Assert-True ($LASTEXITCODE -eq 0) "Legacy platyPS help generation failed for locale '$($locale.Basename)'."
-                    $mamlFile = Join-Path $outputPath "$env:BHProjectName-help.xml"
-                    Assert-True (Test-Path $mamlFile) "Expected MAML help file was not created: $mamlFile"
+                    throw "PlatyPS v1 command-help import failed for locale '$($locale.Basename)'. Ensure docs/<locale>/commands markdown is v1-compatible. $($_.Exception.Message)"
                 }
             }
 

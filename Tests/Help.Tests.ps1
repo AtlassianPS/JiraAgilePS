@@ -231,65 +231,6 @@ Describe "Help tests" -Tag "Documentation", "Build" {
                         }
                     }
 
-                    $script:canValidateMandatoryFlag = $true
-                    $mandatoryParameters = @(
-                        foreach ($paramName in $publicParameters) {
-                            if ($command.Parameters[$paramName].ParameterSets.Values.IsMandatory -contains "True") {
-                                $paramName
-                            }
-                        }
-                    )
-                    if ($mandatoryParameters.Count -gt 0) {
-                        $mandatoryMarkedInHelp = $false
-                        foreach ($paramName in $mandatoryParameters) {
-                            if ($helpParametersByName.ContainsKey($paramName)) {
-                                $requiredValue = $helpParametersByName[$paramName].Required -as [string]
-                                if ($requiredValue -and $requiredValue -match '^[Tt]rue$') {
-                                    $mandatoryMarkedInHelp = $true
-                                    break
-                                }
-                            }
-                        }
-                        if (-not $mandatoryMarkedInHelp) {
-                            $script:canValidateMandatoryFlag = $false
-                        }
-                    }
-
-                    $script:canValidateParameterType = @(
-                        foreach ($paramName in $publicParameters) {
-                            if ($helpParametersByName.ContainsKey($paramName)) {
-                                $typeValue = $helpParametersByName[$paramName].parameterValue -as [string]
-                                if (-not [string]::IsNullOrWhiteSpace($typeValue)) { $typeValue }
-                            }
-                        }
-                    ).Count -gt 0
-
-                    $script:canValidatePipelineFlag = $true
-                    $pipelineParameters = @(
-                        foreach ($paramName in $publicParameters) {
-                            $codeParam = $command.Parameters[$paramName]
-                            $acceptsPipeline = (
-                                ($codeParam.ParameterSets.Values.ValueFromPipeline -contains $true) -or
-                                ($codeParam.ParameterSets.Values.ValueFromPipelineByPropertyName -contains $true)
-                            )
-                            if ($acceptsPipeline) { $paramName }
-                        }
-                    )
-                    if ($pipelineParameters.Count -gt 0) {
-                        $pipelineMarkedInHelp = $false
-                        foreach ($paramName in $pipelineParameters) {
-                            if ($helpParametersByName.ContainsKey($paramName)) {
-                                $pipelineValue = $helpParametersByName[$paramName].pipelineInput -as [string]
-                                if ($pipelineValue -and $pipelineValue -match '^[Tt]rue') {
-                                    $pipelineMarkedInHelp = $true
-                                    break
-                                }
-                            }
-                        }
-                        if (-not $pipelineMarkedInHelp) {
-                            $script:canValidatePipelineFlag = $false
-                        }
-                    }
                 }
 
                 Context "Parameter: <_>" -ForEach $parameters {
@@ -309,7 +250,6 @@ Describe "Help tests" -Tag "Documentation", "Build" {
                     }
 
                     It "has a mandatory flag" {
-                        if (-not $canValidateMandatoryFlag) { return }
                         $isMandatory = $parameterCode.ParameterSets.Values.IsMandatory -contains "True"
                         $isRequiredInHelp = if ($parameterHelp) { $parameterHelp.Required }
 
@@ -318,7 +258,6 @@ Describe "Help tests" -Tag "Documentation", "Build" {
                     }
 
                     It "matches the type of the parameter in code and help" {
-                        if (-not $canValidateParameterType) { return }
                         $codeType = $parameterCode.ParameterType.Name
                         if ($codeType -eq "Object" -or $codeType -eq "Object[]") {
                             $psTypeAttr = $parameterCode.Attributes | Where-Object { $_ -is [System.Management.Automation.PSTypeNameAttribute] } | Select-Object -First 1
@@ -351,7 +290,6 @@ Describe "Help tests" -Tag "Documentation", "Build" {
                     }
 
                     It "preserves pipeline input flag in help" {
-                        if (-not $canValidatePipelineFlag) { return }
                         $byValue = $parameterCode.ParameterSets.Values.ValueFromPipeline -contains $true
                         $byProperty = $parameterCode.ParameterSets.Values.ValueFromPipelineByPropertyName -contains $true
                         $codeAcceptsPipeline = $byValue -or $byProperty
