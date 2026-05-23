@@ -80,33 +80,35 @@ Describe "Style rules" -Tag "Unit" {
         }
     }
 
-    It "uses CRLF as newline character in code files" {
+    It "does not mix newline characters in code files" {
         $badFiles = @(
             foreach ($file in $codeFiles) {
                 $string = [System.IO.File]::ReadAllText($file.FullName)
-                if ($string.Length -gt 0 -and $string -notmatch "\r\n$") {
+                $lineEndings = @([regex]::Matches($string, "\r\n|(?<!\r)\n|\r(?!\n)").Value | Sort-Object -Unique)
+                if ($lineEndings.Count -gt 1) {
                     $file.FullName
                 }
             }
         )
 
         if ($badFiles.Count -gt 0) {
-            throw "The following files do not use CRLF as line break:`n  $($badFiles -join "`n  ")"
+            throw "The following files mix newline characters:`n  $($badFiles -join "`n  ")"
         }
     }
 
-    It "uses LF as newline character in documentation files" {
+    It "does not mix newline characters in documentation files" {
         $badFiles = @(
             foreach ($file in $docFiles) {
                 $string = [System.IO.File]::ReadAllText($file.FullName)
-                if ($string.Length -gt 0 -and $string -notmatch "\n$") {
+                $lineEndings = @([regex]::Matches($string, "\r\n|(?<!\r)\n|\r(?!\n)").Value | Sort-Object -Unique)
+                if ($lineEndings.Count -gt 1) {
                     $file.FullName
                 }
             }
         )
 
         if ($badFiles.Count -gt 0) {
-            throw "The following files do not use LF as line break:`n  $($badFiles -join "`n  ")"
+            throw "The following files mix newline characters:`n  $($badFiles -join "`n  ")"
         }
     }
 }
