@@ -105,10 +105,43 @@ jobs:
           name: ${{ matrix.name }}-Unit-Tests
           path: Test*.xml
 
+  release_dry_run:
+    name: Release Dry Run
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.6
+
+      - name: Validate release packaging path
+        shell: pwsh
+        run: |
+          Invoke-Build -Task Clean, Build, SetVersion, Package -VersionToPublish v9999.0.0-alpha1
+
+          $manifestPath = './Release/JiraAgilePS/JiraAgilePS.psd1'
+          $packagePath = './Release/JiraAgilePS.zip'
+
+          if (-not (Test-Path $manifestPath)) {
+            throw "Missing release manifest: $manifestPath"
+          }
+          if (-not (Test-Path $packagePath)) {
+            throw "Missing release package: $packagePath"
+          }
+
+          $manifest = Test-ModuleManifest -Path $manifestPath -ErrorAction Stop -WarningAction SilentlyContinue
+          if ($manifest.Version.ToString() -ne '9999.0.0') {
+            throw "Expected manifest version 9999.0.0, got $($manifest.Version)"
+          }
+
+          $manifestData = Import-PowerShellDataFile -Path $manifestPath
+          if ($manifestData.PrivateData.PSData.Prerelease -ne 'alpha1') {
+            throw "Expected prerelease alpha1, got '$($manifestData.PrivateData.PSData.Prerelease)'"
+          }
+
   ci-required:
     name: CI Result
     if: always()
-    needs: [build, test_windows_ps5, test_pwsh]
+    needs: [build, test_windows_ps5, test_pwsh, release_dry_run]
     runs-on: ubuntu-latest
     steps:
       - name: Aggregate job results

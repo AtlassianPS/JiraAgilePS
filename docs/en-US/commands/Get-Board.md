@@ -1,85 +1,75 @@
 ---
 external help file: JiraAgilePS-help.xml
 Module Name: JiraAgilePS
-online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-Epic/
+online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-Board/
 locale: en-US
 layout: documentation
-permalink: /docs/JiraAgilePS/commands/Get-Epic/
+permalink: /docs/JiraAgilePS/commands/Get-Board/
 ---
-# Get-Epic
+# Get-Board
 
 ## SYNOPSIS
 
-Gets details for one or more Jira Agile epics.
+Gets Jira Agile boards.
 
 ## SYNTAX
 
-### _ById (Default)
+### _All (Default)
 
 ```powershell
-Get-Epic [-Epic] <Epic[]> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
+Get-Board [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
-### _ByBoard
+### _Search
 
 ```powershell
-Get-Epic [-Board] <Board> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
+Get-Board [-BoardId] <UInt64[]> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-`Get-Epic` supports:
+`Get-Board` queries Jira Agile boards through the Jira Agile REST API.
 
-- `GET /rest/agile/1.0/epic/{epicId}`
-- `GET /rest/agile/1.0/board/{boardId}/epic`
+Use `-BoardId` when you already know specific board identifiers.  
+Without `-BoardId`, the command returns boards with paging support.
 
-Returns JiraAgilePS epic objects for direct epic lookup or board-scoped epic listing.
+When imported normally, run this command as `Get-JiraAgileBoard`.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-$epic = [AtlassianPS.JiraAgilePS.Epic]::new(10001)
-JiraAgilePS\Get-Epic -Epic $epic -Credential $cred
+JiraAgilePS\Get-Board -Credential $cred
 ```
 
-Returns details for epic 10001.
+Returns boards visible to the authenticated user.
 
 ### EXAMPLE 2
 
 ```powershell
-$board = JiraAgilePS\Get-Board -BoardId 7 -Credential $cred
-JiraAgilePS\Get-Epic -Board $board -Credential $cred
+JiraAgilePS\Get-Board -BoardId 12, 45 -Credential $cred
 ```
 
-Returns epics associated with board 7.
+Returns only the boards with IDs 12 and 45.
+
+### EXAMPLE 3
+
+```powershell
+JiraAgilePS\Get-Board -First 10 -IncludeTotalCount -Credential $cred
+```
+
+Returns the first 10 boards and emits the total available board count.
 
 ## PARAMETERS
 
-### -Epic
+### -BoardId
 
-One or more epic objects/identifiers to query.
-
-```yaml
-Type: Epic[]
-Parameter Sets: _ById
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: True (ByValue)
-Accept wildcard characters: False
-```
-
-### -Board
-
-Board object used for board-scoped epic retrieval.
+One or more board IDs to retrieve.
 
 ```yaml
-Type: Board
-Parameter Sets: _ByBoard
+Type: UInt64[]
+Parameter Sets: _Search
 Aliases:
 
 Required: True
@@ -91,11 +81,11 @@ Accept wildcard characters: False
 
 ### -PageSize
 
-Maximum number of epics requested per page.
+Maximum results requested per page when listing boards.
 
 ```yaml
 Type: UInt32
-Parameter Sets: _ByBoard
+Parameter Sets: _All
 Aliases:
 
 Required: False
@@ -178,18 +168,20 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### AtlassianPS.JiraAgilePS.Epic
+### System.UInt64[]
 
-### AtlassianPS.JiraAgilePS.Board
+Board IDs when using the `_Search` parameter set.
 
 ## OUTPUTS
 
-### AtlassianPS.JiraAgilePS.Epic
+### AtlassianPS.JiraAgilePS.Board
 
 ## NOTES
 
-Use `Get-JiraAgileEpic` in normal module usage. `Get-Epic` is the source function name.
+Use `Get-JiraAgileBoard` in normal module usage. `Get-Board` is the source function name.
 
 ## RELATED LINKS
 
-[Get-Issue](Get-Issue.html)
+[Get-Sprint](Get-Sprint.html)
+
+[Add-IssueToSprint](Add-IssueToSprint.html)

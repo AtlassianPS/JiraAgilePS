@@ -1,0 +1,114 @@
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
+
+Describe "Style rules" -Tag "Unit" {
+    BeforeAll {
+        . "$PSScriptRoot/Helpers/TestTools.ps1"
+
+        $moduleRoot = Resolve-ProjectRoot
+
+        ${/} = [System.IO.Path]::DirectorySeparatorChar
+
+        # -Force is required so dot-prefixed files (e.g. Tests/.../.template.ps1)
+        # are discovered on Unix-like systems too.
+        $script:codeFiles = Get-ChildItem $moduleRoot -Include *.ps1, *.psm1 -Recurse -Force |
+            Where-Object { $_.FullName -notlike "*${/}Release${/}*" }
+        $script:docFiles = Get-ChildItem $moduleRoot -Include *.md -Recurse -Force |
+            Where-Object { $_.FullName -notlike "*${/}Release${/}*" }
+    }
+
+    It "has no trailing whitespace in code files" {
+        $badLines = @(
+            foreach ($file in $codeFiles) {
+                $lines = [System.IO.File]::ReadAllLines($file.FullName)
+                $lineCount = $lines.Count
+
+                for ($i = 0; $i -lt $lineCount; $i++) {
+                    if ($lines[$i] -match '\s+$') {
+                        'File: {0}, Line: {1}' -f $file.FullName, ($i + 1)
+                    }
+                }
+            }
+        )
+
+        if ($badLines.Count -gt 0) {
+            throw "The following $($badLines.Count) lines contain trailing whitespace:`n  $($badLines -join "`n  ")"
+        }
+    }
+
+    It "has one newline at the end of the file" {
+        $badFiles = @(
+            foreach ($file in @($codeFiles + $docFiles)) {
+                $string = [System.IO.File]::ReadAllText($file.FullName)
+                if ($string.Length -gt 0 -and $string[-1] -ne "`n") {
+                    $file.FullName
+                }
+            }
+        )
+
+        if ($badFiles.Count -gt 0) {
+            throw "The following files do not end with a newline:`n  $($badFiles -join "`n  ")"
+        }
+    }
+
+    It "uses UTF-8 (with or without BOM) for code files" {
+        $badFiles = @(
+            foreach ($file in $codeFiles) {
+                $encoding = Get-FileEncoding -Path $file.FullName
+                if ($encoding -and $encoding.encoding -notin @("UTF8", "UTF8-BOM")) {
+                    $file.FullName
+                }
+            }
+        )
+
+        if ($badFiles.Count -gt 0) {
+            throw "The following files are not encoded with UTF-8:`n  $($badFiles -join "`n  ")"
+        }
+    }
+
+    It "uses UTF-8 for documentation files" {
+        $badFiles = @(
+            foreach ($file in $docFiles) {
+                $encoding = Get-FileEncoding -Path $file.FullName
+                if ($encoding -and $encoding.encoding -ne "UTF8") {
+                    $file.FullName
+                }
+            }
+        )
+
+        if ($badFiles.Count -gt 0) {
+            throw "The following files are not encoded with UTF-8 (no BOM):`n  $($badFiles -join "`n  ")"
+        }
+    }
+
+    It "does not mix newline characters in code files" {
+        $badFiles = @(
+            foreach ($file in $codeFiles) {
+                $string = [System.IO.File]::ReadAllText($file.FullName)
+                $lineEndings = @([regex]::Matches($string, "\r\n|(?<!\r)\n|\r(?!\n)").Value | Sort-Object -Unique)
+                if ($lineEndings.Count -gt 1) {
+                    $file.FullName
+                }
+            }
+        )
+
+        if ($badFiles.Count -gt 0) {
+            throw "The following files mix newline characters:`n  $($badFiles -join "`n  ")"
+        }
+    }
+
+    It "does not mix newline characters in documentation files" {
+        $badFiles = @(
+            foreach ($file in $docFiles) {
+                $string = [System.IO.File]::ReadAllText($file.FullName)
+                $lineEndings = @([regex]::Matches($string, "\r\n|(?<!\r)\n|\r(?!\n)").Value | Sort-Object -Unique)
+                if ($lineEndings.Count -gt 1) {
+                    $file.FullName
+                }
+            }
+        )
+
+        if ($badFiles.Count -gt 0) {
+            throw "The following files mix newline characters:`n  $($badFiles -join "`n  ")"
+        }
+    }
+}

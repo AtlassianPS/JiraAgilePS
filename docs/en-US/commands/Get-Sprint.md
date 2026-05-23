@@ -1,68 +1,87 @@
 ---
 external help file: JiraAgilePS-help.xml
 Module Name: JiraAgilePS
-online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-Epic/
+online version: https://atlassianps.org/docs/JiraAgilePS/commands/Get-Sprint/
 locale: en-US
 layout: documentation
-permalink: /docs/JiraAgilePS/commands/Get-Epic/
+permalink: /docs/JiraAgilePS/commands/Get-Sprint/
 ---
-# Get-Epic
+# Get-Sprint
 
 ## SYNOPSIS
 
-Gets details for one or more Jira Agile epics.
+Gets sprint data from Jira Agile.
 
 ## SYNTAX
 
-### _ById (Default)
+### _All (Default)
 
 ```powershell
-Get-Epic [-Epic] <Epic[]> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
+Get-Sprint [-Board] <Board> [[-State] <SprintState>] [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
-### _ByBoard
+### _ById
 
 ```powershell
-Get-Epic [-Board] <Board> [[-PageSize] <UInt32>] [-Credential <PSCredential>] [<CommonParameters>]
+Get-Sprint [-Sprint] <Sprint[]> [-Credential <PSCredential>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-`Get-Epic` supports:
+`Get-Sprint` retrieves sprints either:
 
-- `GET /rest/agile/1.0/epic/{epicId}`
-- `GET /rest/agile/1.0/board/{boardId}/epic`
+- by board (optionally filtered by state), or
+- by known sprint object/ID context.
 
-Returns JiraAgilePS epic objects for direct epic lookup or board-scoped epic listing.
+When called with `-Board`, the command supports paging and can return all matching sprints.
+
+When imported normally, run this command as `Get-JiraAgileSprint`.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-$epic = [AtlassianPS.JiraAgilePS.Epic]::new(10001)
-JiraAgilePS\Get-Epic -Epic $epic -Credential $cred
+$board = JiraAgilePS\Get-Board -Credential $cred | Select-Object -First 1
+JiraAgilePS\Get-Sprint -Board $board -Credential $cred
 ```
 
-Returns details for epic 10001.
+Lists sprints for a board.
 
 ### EXAMPLE 2
 
 ```powershell
-$board = JiraAgilePS\Get-Board -BoardId 7 -Credential $cred
-JiraAgilePS\Get-Epic -Board $board -Credential $cred
+$board = JiraAgilePS\Get-Board -Credential $cred | Select-Object -First 1
+JiraAgilePS\Get-Sprint -Board $board -State Active -Credential $cred
 ```
 
-Returns epics associated with board 7.
+Returns only active sprints for the selected board.
+
+### EXAMPLE 3
+
+```powershell
+$sprint = [AtlassianPS.JiraAgilePS.Sprint]::new(42)
+JiraAgilePS\Get-Sprint -Sprint $sprint -Credential $cred
+```
+
+Gets sprint details by sprint ID context.
+
+### EXAMPLE 4
+
+```powershell
+JiraAgilePS\Get-Sprint -Board $board -First 20 -IncludeTotalCount -Credential $cred
+```
+
+Returns the first 20 sprints for a board and emits the total available count.
 
 ## PARAMETERS
 
-### -Epic
+### -Sprint
 
-One or more epic objects/identifiers to query.
+Sprint object(s) used when querying by sprint identity.
 
 ```yaml
-Type: Epic[]
+Type: Sprint[]
 Parameter Sets: _ById
 Aliases:
 
@@ -75,11 +94,11 @@ Accept wildcard characters: False
 
 ### -Board
 
-Board object used for board-scoped epic retrieval.
+Board object used to retrieve board sprints.
 
 ```yaml
 Type: Board
-Parameter Sets: _ByBoard
+Parameter Sets: _All
 Aliases:
 
 Required: True
@@ -89,13 +108,29 @@ Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
+### -State
+
+Optional sprint state filter (for example `Active`).
+
+```yaml
+Type: SprintState
+Parameter Sets: _All
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -PageSize
 
-Maximum number of epics requested per page.
+Maximum results requested per page when listing board sprints.
 
 ```yaml
 Type: UInt32
-Parameter Sets: _ByBoard
+Parameter Sets: _All
 Aliases:
 
 Required: False
@@ -178,18 +213,24 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### AtlassianPS.JiraAgilePS.Epic
-
 ### AtlassianPS.JiraAgilePS.Board
+
+Board object when using the `_All` parameter set.
+
+### AtlassianPS.JiraAgilePS.Sprint[]
+
+Sprint object(s) when using the `_ById` parameter set.
 
 ## OUTPUTS
 
-### AtlassianPS.JiraAgilePS.Epic
+### AtlassianPS.JiraAgilePS.Sprint
 
 ## NOTES
 
-Use `Get-JiraAgileEpic` in normal module usage. `Get-Epic` is the source function name.
+Use `Get-JiraAgileSprint` in normal module usage. `Get-Sprint` is the source function name.
 
 ## RELATED LINKS
 
-[Get-Issue](Get-Issue.html)
+[Get-Board](Get-Board.html)
+
+[Add-IssueToSprint](Add-IssueToSprint.html)
