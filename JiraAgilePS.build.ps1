@@ -18,6 +18,10 @@ param(
     [String[]] $ExcludeTag
 )
 
+if ($VersionToPublish) {
+    $VersionToPublish = $VersionToPublish.TrimStart('v')
+}
+
 Import-Module "$PSScriptRoot/Tools/BuildTools.psm1" -Force
 
 $ProjectName = 'JiraAgilePS'
