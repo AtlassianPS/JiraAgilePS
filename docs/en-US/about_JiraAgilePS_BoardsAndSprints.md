@@ -41,6 +41,6 @@ Use `-First` for quick script checks and `-PageSize` when tuning API payload siz
 
 # SEE ALSO
 
-- [Get-Board](commands/Get-Board.html)
-- [Get-Sprint](commands/Get-Sprint.html)
-- [Add-IssueToSprint](commands/Add-IssueToSprint.html)
+- [Get-JiraAgileBoard](/docs/JiraAgilePS/commands/Get-Board/)
+- [Get-JiraAgileSprint](/docs/JiraAgilePS/commands/Get-Sprint/)
+- [Add-JiraAgileIssueToSprint](/docs/JiraAgilePS/commands/Add-IssueToSprint/)

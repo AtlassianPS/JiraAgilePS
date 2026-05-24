@@ -45,6 +45,6 @@ if (-not $issues) { throw "No issues matched the query." }
 
 # SEE ALSO
 
-- [Get-Board](commands/Get-Board.html)
-- [Get-Sprint](commands/Get-Sprint.html)
+- [Get-JiraAgileBoard](/docs/JiraAgilePS/commands/Get-Board/)
+- [Get-JiraAgileSprint](/docs/JiraAgilePS/commands/Get-Sprint/)
 - [Get-JiraIssue](https://atlassianps.org/docs/JiraPS/commands/Get-JiraIssue/)

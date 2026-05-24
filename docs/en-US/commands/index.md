@@ -5,10 +5,16 @@ hide: true
 ---
 # JiraAgilePS commands
 
-Read cmdlets added for first-release Agile scope:
+JiraAgilePS exports these commands with the `JiraAgile` default command prefix.
+The documentation pages use the source function names that back the exported commands.
 
-- [Get-JiraAgileIssue](/docs/JiraAgilePS/commands/Get-JiraAgileIssue/)
-- [Get-JiraAgileBoardConfiguration](/docs/JiraAgilePS/commands/Get-JiraAgileBoardConfiguration/)
-- [Get-JiraAgileEpic](/docs/JiraAgilePS/commands/Get-JiraAgileEpic/)
+| Exported command | Documentation |
+|---|---|
+| `Add-JiraAgileIssueToSprint` | [Add-IssueToSprint](/docs/JiraAgilePS/commands/Add-IssueToSprint/) |
+| `Get-JiraAgileBoard` | [Get-Board](/docs/JiraAgilePS/commands/Get-Board/) |
+| `Get-JiraAgileBoardConfiguration` | [Get-BoardConfiguration](/docs/JiraAgilePS/commands/Get-BoardConfiguration/) |
+| `Get-JiraAgileEpic` | [Get-Epic](/docs/JiraAgilePS/commands/Get-Epic/) |
+| `Get-JiraAgileIssue` | [Get-Issue](/docs/JiraAgilePS/commands/Get-Issue/) |
+| `Get-JiraAgileSprint` | [Get-Sprint](/docs/JiraAgilePS/commands/Get-Sprint/) |
 
 For module overview and setup, see [about_JiraAgilePS](/docs/JiraAgilePS/).
