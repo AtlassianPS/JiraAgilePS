@@ -28,17 +28,7 @@ InModuleScope JiraAgilePS {
         }
 
         It "can call the Agile board endpoint" {
-            try {
-                $script:boards = @(Get-JiraAgileBoard -PageSize 1 -ErrorAction Stop)
-            }
-            catch {
-                $message = $_.Exception.Message
-                if (-not $script:env.IsCloud -and ($message -match '404|dead link|Invalid Server Response')) {
-                    Set-ItResult -Skipped -Because 'The Dockerized AMPS Jira image exposes Jira Core but not Jira Software Agile REST.'
-                    return
-                }
-                throw
-            }
+            { $script:boards = @(Get-JiraAgileBoard -PageSize 1 -ErrorAction Stop) } | Should -Not -Throw
 
             if ($script:boards.Count -gt 0) {
                 $script:boards[0].PSObject.TypeNames[0] | Should -Be 'AtlassianPS.JiraAgilePS.Board'
