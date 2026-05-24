@@ -32,7 +32,8 @@ InModuleScope JiraAgilePS {
                 $script:boards = @(Get-JiraAgileBoard -PageSize 1 -ErrorAction Stop)
             }
             catch {
-                if (-not $script:env.IsCloud -and $_.Exception.Message -match '404') {
+                $message = $_.Exception.Message
+                if (-not $script:env.IsCloud -and ($message -match '404|dead link|Invalid Server Response')) {
                     Set-ItResult -Skipped -Because 'The Dockerized AMPS Jira image exposes Jira Core but not Jira Software Agile REST.'
                     return
                 }
