@@ -15,7 +15,14 @@ param(
     [String[]] $Tag,
 
     [Parameter()]
-    [String[]] $ExcludeTag
+    [String[]] $ExcludeTag,
+
+    [Parameter()]
+    [ValidateRange(1, 16)]
+    [Int] $ThrottleLimit = 4,
+
+    [Parameter()]
+    [String[]] $IntegrationTestPath
 )
 
 if ($VersionToPublish) {
@@ -283,6 +290,10 @@ Task SetVersion {
 
 Task Test {
     $integrationPath = Join-Path $env:BHBuildOutput 'Tests/Integration'
+    $integrationTestFiles = @()
+    if (Test-Path $integrationPath) {
+        $integrationTestFiles = @(Get-ChildItem -Path $integrationPath -Filter '*.Tests.ps1' -File | Select-Object -ExpandProperty FullName)
+    }
 
     $null = Invoke-AtlassianPSModuleTests `
         -TestPath "$env:BHBuildOutput/Tests" `
@@ -290,8 +301,105 @@ Task Test {
         -Tag $Tag `
         -ExcludeTag $ExcludeTag `
         -DefaultExcludeTag @('Integration') `
-        -ExcludePath @($integrationPath) `
+        -ExcludePath $integrationTestFiles `
         -MinimumPesterVersion ([Version]'5.7.0')
+}
+
+# Synopsis: Run integration tests against live Jira Agile (Cloud or Data Center; no build required)
+Task TestIntegration {
+    $integrationHelperPath = Join-Path $env:BHProjectPath 'Tests/Helpers/IntegrationTestTools.ps1'
+    if (Test-Path $integrationHelperPath) {
+        . $integrationHelperPath
+        Read-DotEnvFile -Path (Join-Path $env:BHProjectPath '.env')
+    }
+
+    $deploymentType = if ($env:CI_JIRA_TYPE) { $env:CI_JIRA_TYPE } else { 'Cloud' }
+    if ($deploymentType -notin @('Cloud', 'Server')) {
+        throw "Invalid CI_JIRA_TYPE '$deploymentType'. Must be 'Cloud' or 'Server'."
+    }
+
+    $requiredEnvVars = if ($deploymentType -eq 'Server') {
+        @(
+            'CI_JIRA_URL'
+            'CI_JIRA_ADMIN'
+            'CI_JIRA_ADMIN_PASSWORD'
+            'CI_JIRA_USER'
+            'CI_JIRA_USER_PASSWORD'
+        )
+    }
+    else {
+        @(
+            'JIRA_CLOUD_URL'
+            'JIRA_CLOUD_USERNAME'
+            'JIRA_CLOUD_PASSWORD'
+            'JIRA_TEST_PROJECT'
+            'JIRA_TEST_ISSUE'
+        )
+    }
+
+    $missing = $requiredEnvVars | Where-Object {
+        [string]::IsNullOrEmpty([Environment]::GetEnvironmentVariable($_))
+    }
+    if ($missing) {
+        throw @"
+Required environment variables for the $deploymentType integration test track are not set: $($missing -join ', ')
+
+For CI: Configure Cloud values as repository variables/secrets; Server values are supplied by the Docker workflow job.
+For local development: Copy .env.example to .env and configure the relevant track before running integration tests.
+See Tests/Integration/README.md for integration test configuration details.
+"@
+    }
+
+    $testPath = if ($IntegrationTestPath) { $IntegrationTestPath } else { @("$env:BHProjectPath/Tests/Integration") }
+    $config = New-PesterConfiguration
+    $config.Run.Path = $testPath
+    $config.Run.PassThru = $true
+    $config.Output.Verbosity = $PesterVerbosity
+    $config.TestResult.Enabled = $true
+    $config.TestResult.OutputFormat = 'NUnitXml'
+    $config.TestResult.OutputPath = 'Test-Integration.xml'
+
+    if ($Tag) {
+        $config.Filter.Tag = $Tag
+        Write-Build Gray "Running integration tests with tag(s): $($Tag -join ', ')"
+    }
+    else {
+        $config.Filter.Tag = @('Integration')
+        Write-Build Gray 'Running integration tests (tag: Integration)'
+    }
+    if ($ExcludeTag) {
+        $config.Filter.ExcludeTag = $ExcludeTag
+        Write-Build Gray "Excluding tag(s): $($ExcludeTag -join ', ')"
+    }
+    if ($ThrottleLimit -ne 4) {
+        Write-Build Gray "ThrottleLimit is accepted for JiraPS parity but direct Pester execution is sequential in JiraAgilePS. Requested: $ThrottleLimit"
+    }
+
+    $result = Invoke-Pester -Configuration $config
+    Assert-True ($result.FailedCount -eq 0) "Integration tests failed: $($result.FailedCount) failed, $($result.PassedCount) passed, $($result.SkippedCount) skipped."
+}
+
+# Synopsis: Start the local Jira Data Center Docker container (for Server-track integration tests)
+Task StartJiraDocker {
+    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+        throw 'Docker is required for the Jira Server track. See https://docs.docker.com/get-docker/.'
+    }
+    $composeFile = Join-Path $env:BHProjectPath 'docker-compose.yml'
+    Assert-True (Test-Path $composeFile) "docker-compose.yml not found at $composeFile"
+    Write-Build Gray "Starting Jira Data Center container via $composeFile (cold start: ~5 min)..."
+    Invoke-BuildExec { docker compose -f $composeFile up -d }
+    & (Join-Path $env:BHProjectPath 'Tools/Wait-JiraServer.ps1')
+}
+
+# Synopsis: Stop the local Jira Data Center Docker container
+Task StopJiraDocker {
+    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+        throw 'Docker is required for the Jira Server track. See https://docs.docker.com/get-docker/.'
+    }
+    $composeFile = Join-Path $env:BHProjectPath 'docker-compose.yml'
+    Assert-True (Test-Path $composeFile) "docker-compose.yml not found at $composeFile"
+    Write-Build Gray "Stopping Jira Data Center container ($composeFile)..."
+    Invoke-BuildExec { docker compose -f $composeFile down -v }
 }
 
 Task Publish SetVersion, SignCode, Package, {

@@ -4,6 +4,7 @@
 
 ### Added
 
+- Added Cloud and Data Center integration smoke test wiring with fail-fast environment validation.
 - Added `Get-JiraAgileIssue` with board, backlog, and sprint parameter sets for:
   - `GET /rest/agile/1.0/board/{boardId}/issue`
   - `GET /rest/agile/1.0/board/{boardId}/backlog`
@@ -24,6 +25,8 @@
 - Added JiraPS-style test guidance and private helper/converter unit coverage for JiraAgilePS.
 
 ### Fixed
+
+- Added support for Jira Cloud `simple` board payloads returned by the Agile board API.
 
 <!-- reference-style links -->
 

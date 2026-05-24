@@ -201,7 +201,8 @@ function Connect-JiraTestServer {
 
     if ($Environment.IsCloud) {
         $secureToken = ConvertTo-SecureString -String $Environment.Password -AsPlainText -Force
-        $session = New-JiraSession -ApiToken $secureToken -EmailAddress $Environment.Username
+        $credential = [PSCredential]::new($Environment.Username, $secureToken)
+        $session = New-JiraSession -Credential $credential
         if (-not $session) {
             throw "Failed to establish Jira session. Check credentials and server URL. For Jira Cloud, JIRA_CLOUD_PASSWORD must be an API token (not your account password)."
         }

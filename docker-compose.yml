@@ -1,0 +1,8 @@
+services:
+  jira:
+    image: moveworkforward/atlas-run-standalone:${JIRA_IMAGE_TAG:-jira-11}
+    ports:
+      - "2990:2990"
+    environment:
+      ATLASSIAN_PRODUCT: jira
+      ATLASSIAN_PLUGIN_SDK_VERSION: 9.6.0

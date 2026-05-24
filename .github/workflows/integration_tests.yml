@@ -1,0 +1,107 @@
+name: Integration Tests
+
+on:
+  schedule:
+    - cron: "30 5 * * *"
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Which track to run"
+        required: false
+        default: both
+        type: choice
+        options:
+          - cloud
+          - server
+          - both
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  cloud_integration_tests:
+    name: Smoke Integration Tests (Cloud)
+    if: (github.event_name == 'schedule' && github.repository == 'AtlassianPS/JiraAgilePS') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.track == 'cloud' || inputs.track == 'both'))
+    runs-on: ubuntu-latest
+    env:
+      JIRA_CLOUD_URL: ${{ vars.JIRA_CLOUD_URL }}
+      JIRA_CLOUD_USERNAME: ${{ vars.ATLASSIAN_CLOUD_USER }}
+      JIRA_CLOUD_PASSWORD: ${{ secrets.ATLASSIAN_CLOUD_PAT }}
+      JIRA_TEST_PROJECT: ${{ vars.JIRA_TEST_PROJECT }}
+      JIRA_TEST_ISSUE: ${{ vars.JIRA_TEST_ISSUE }}
+      JIRA_TEST_USER: ${{ vars.JIRA_TEST_USER }}
+      JIRA_TEST_GROUP: ${{ vars.JIRA_TEST_GROUP }}
+      JIRA_TEST_FILTER: ${{ vars.JIRA_TEST_FILTER }}
+      JIRA_TEST_VERSION: ${{ vars.JIRA_TEST_VERSION }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.6
+
+      - name: Run Cloud smoke integration tests
+        run: Invoke-Build -Task TestIntegration -Tag Smoke -PesterVerbosity Detailed
+        shell: pwsh
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Cloud-Integration-Tests
+          path: Test-Integration.xml
+
+  server_integration_tests:
+    name: Smoke Integration Tests (Dockerized Jira DC)
+    if: (github.event_name == 'schedule' && github.repository == 'AtlassianPS/JiraAgilePS') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.track == 'server' || inputs.track == 'both'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI_JIRA_TYPE: Server
+      CI_JIRA_URL: http://localhost:2990/jira
+      CI_JIRA_ADMIN: admin
+      CI_JIRA_ADMIN_PASSWORD: admin
+      CI_JIRA_USER: jira_user
+      CI_JIRA_USER_PASSWORD: jira
+      JIRA_TEST_PROJECT: TEST
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Start Jira Data Center container
+        run: docker compose up -d
+        shell: bash
+
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.6
+
+      - name: Wait for Jira to become reachable
+        run: pwsh ./Tools/Wait-JiraServer.ps1 -TimeoutSeconds 1200
+
+      - name: Run Server smoke integration tests
+        run: Invoke-Build -Task TestIntegration -Tag Server -PesterVerbosity Detailed
+        shell: pwsh
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Server-Integration-Tests
+          path: Test-Integration.xml
+
+      - name: Capture Jira container logs for debugging
+        if: always()
+        run: docker compose logs jira > jira-container.log
+        shell: bash
+
+      - name: Upload Jira container logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Server-Jira-Container-Logs
+          path: jira-container.log
+
+      - name: Tear down Jira Data Center container
+        if: always()
+        run: docker compose down -v
+        shell: bash
