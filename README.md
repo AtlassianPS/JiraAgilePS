@@ -4,7 +4,9 @@ permalink: /module/JiraAgilePS/
 ---
 # [JiraAgilePS](https://atlassianps.org/module/JiraAgilePS)
 
-<!-- [![GitHub release](https://img.shields.io/github/release/AtlassianPS/JiraAgilePS.svg)](https://github.com/AtlassianPS/JiraAgilePS/releases/latest) [![Build status](https://img.shields.io/appveyor/ci/AtlassianPS/JiraAgilePS/master.svg)](https://ci.appveyor.com/project/AtlassianPS/jiraAgileps/branch/master) [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/JiraAgilePS.svg)](https://www.powershellgallery.com/packages/JiraAgilePS) ![License](https://img.shields.io/badge/license-MIT-blue.svg)-->
+[![Build Status](https://img.shields.io/github/actions/workflow/status/AtlassianPS/JiraAgilePS/ci.yml?style=for-the-badge)](https://github.com/AtlassianPS/JiraAgilePS/actions/workflows/ci.yml)
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/JiraAgilePS.svg?style=for-the-badge)](https://www.powershellgallery.com/packages/JiraAgilePS)
+![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)
 
 JiraAgilePS is a PowerShell module to interact with _Agile_, Atlassian [JIRA]'s plugin,
 via a REST API, while maintaining a consistent PowerShell look and feel.
@@ -93,7 +95,16 @@ and [docker](https://docs.docker.com/engine/install/).
 When opening the repository in VS Code, it will recommend the installation of the extension.
 And once installed, you will be prompted to "Reopen in Container".
 
-## Acknowledgments
+## Tested on
+
+| Configuration | Status |
+| ------------- | ------ |
+| Windows PowerShell v5.1 | [CI workflow](https://github.com/AtlassianPS/JiraAgilePS/actions/workflows/ci.yml) |
+| PowerShell 7 on Windows | [CI workflow](https://github.com/AtlassianPS/JiraAgilePS/actions/workflows/ci.yml) |
+| PowerShell 7 on Ubuntu | [CI workflow](https://github.com/AtlassianPS/JiraAgilePS/actions/workflows/ci.yml) |
+| PowerShell 7 on macOS | [CI workflow](https://github.com/AtlassianPS/JiraAgilePS/actions/workflows/ci.yml) |
+
+## Acknowledgements
 
 * Thanks to everyone ([Our Contributors](https://atlassianps.org/#people)) that
   helped with this module
@@ -122,7 +133,7 @@ Hopefully this is obvious, but:
   [Submit an Issue]: https://github.com/AtlassianPS/JiraAgilePS/issues/new
   [replicaJunction]: https://github.com/replicaJunction
   [MIT license]: https://github.com/AtlassianPS/JiraAgilePS/blob/master/LICENSE
-  [Contributing]: http://atlassianps.org/docs/Contributing
+  [Contributing]: https://atlassianps.org/docs/Contributing/
 
 <!-- [//]: # (Sweet online markdown editor at http://dillinger.io) -->
 <!-- [//]: # ("GitHub Flavored Markdown" https://help.github.com/articles/github-flavored-markdown/) -->
