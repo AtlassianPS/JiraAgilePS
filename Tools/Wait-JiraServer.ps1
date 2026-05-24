@@ -20,7 +20,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
-$boardUrl = "$($BaseUrl.TrimEnd('/'))/rest/agile/1.0/board?maxResults=1"
+$serverInfoUrl = "$($BaseUrl.TrimEnd('/'))/rest/api/2/serverInfo"
 $authPair = "${Username}:${Password}"
 $headers = @{ Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($authPair)) }
 
@@ -28,9 +28,9 @@ Write-Host "Waiting for Jira Data Center at $BaseUrl" -ForegroundColor Cyan
 
 do {
     try {
-        $response = Invoke-WebRequest -Uri $boardUrl -Headers $headers -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
+        $response = Invoke-WebRequest -Uri $serverInfoUrl -Headers $headers -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
         if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 300) {
-            Write-Host 'Jira Data Center Agile API is reachable.' -ForegroundColor Green
+            Write-Host 'Jira Data Center is reachable.' -ForegroundColor Green
             return
         }
     }

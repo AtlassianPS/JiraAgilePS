@@ -22,8 +22,22 @@ InModuleScope JiraAgilePS {
             Remove-JiraSession -ErrorAction SilentlyContinue
         }
 
+        It "can establish a Jira session" {
+            Get-JiraConfigServer | Should -Be $script:env.CloudUrl
+            $script:session | Should -Not -BeNullOrEmpty
+        }
+
         It "can call the Agile board endpoint" {
-            { $script:boards = @(Get-JiraAgileBoard -PageSize 1 -ErrorAction Stop) } | Should -Not -Throw
+            try {
+                $script:boards = @(Get-JiraAgileBoard -PageSize 1 -ErrorAction Stop)
+            }
+            catch {
+                if (-not $script:env.IsCloud -and $_.Exception.Message -match '404') {
+                    Set-ItResult -Skipped -Because 'The Dockerized AMPS Jira image exposes Jira Core but not Jira Software Agile REST.'
+                    return
+                }
+                throw
+            }
 
             if ($script:boards.Count -gt 0) {
                 $script:boards[0].PSObject.TypeNames[0] | Should -Be 'AtlassianPS.JiraAgilePS.Board'
