@@ -376,7 +376,9 @@ See Tests/Integration/README.md for integration test configuration details.
     }
 
     $result = Invoke-Pester -Configuration $config
-    Assert-True ($result.FailedCount -eq 0) "Integration tests failed: $($result.FailedCount) failed, $($result.PassedCount) passed, $($result.SkippedCount) skipped."
+    $failedContainerCount = @($result.Containers | Where-Object { $_.Result -eq 'Failed' }).Count
+    Assert-True ($result.FailedCount -eq 0 -and $failedContainerCount -eq 0) "Integration tests failed: $($result.FailedCount) failed tests, $failedContainerCount failed containers, $($result.PassedCount) passed, $($result.SkippedCount) skipped."
+    Assert-True ($result.PassedCount -gt 0) "Integration tests did not execute any passing tests. Check the selected path and tags."
 }
 
 # Synopsis: Start the local Jira Data Center Docker container (for Server-track integration tests)
