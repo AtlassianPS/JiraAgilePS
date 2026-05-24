@@ -18,8 +18,8 @@ Use JiraAgilePS when you need Jira Software Agile REST operations from PowerShel
 
 ## SEE ALSO
 
-- [JiraAgilePS documentation index](index.html)
-- [Commands index](commands/index.html)
-- [Get-JiraAgileIssue](/docs/JiraAgilePS/commands/Get-JiraAgileIssue/)
-- [Get-JiraAgileBoardConfiguration](/docs/JiraAgilePS/commands/Get-JiraAgileBoardConfiguration/)
-- [Get-JiraAgileEpic](/docs/JiraAgilePS/commands/Get-JiraAgileEpic/)
+- [JiraAgilePS documentation index](/docs/JiraAgilePS/)
+- [Commands index](/docs/JiraAgilePS/commands/)
+- [Get-JiraAgileIssue](/docs/JiraAgilePS/commands/Get-Issue/)
+- [Get-JiraAgileBoardConfiguration](/docs/JiraAgilePS/commands/Get-BoardConfiguration/)
+- [Get-JiraAgileEpic](/docs/JiraAgilePS/commands/Get-Epic/)
