@@ -1,0 +1,21 @@
+name: Integration Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Which track to run"
+        required: false
+        default: both
+        type: choice
+        options:
+          - cloud
+          - server
+          - both
+
+jobs:
+  scaffold:
+    name: Scaffold
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Integration workflow scaffold. Branches may override this file."
