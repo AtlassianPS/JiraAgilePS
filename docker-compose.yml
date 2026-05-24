@@ -1,6 +1,8 @@
 services:
   jira:
     image: moveworkforward/atlas-run-standalone:${JIRA_IMAGE_TAG:-jira-11}
+    tty: true
+    stdin_open: true
     ports:
       - "2990:2990"
     environment:
