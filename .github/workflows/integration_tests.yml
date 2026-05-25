@@ -1,6 +1,8 @@
 name: Integration Tests
 
 on:
+  schedule:
+    - cron: "30 5 * * *"
   workflow_dispatch:
     inputs:
       track:
@@ -13,9 +15,85 @@ on:
           - server
           - both
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  scaffold:
-    name: Scaffold
+  cloud_integration_tests:
+    name: Smoke Integration Tests (Cloud)
+    if: (github.event_name == 'schedule' && github.repository == 'AtlassianPS/JiraAgilePS') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.track == 'cloud' || inputs.track == 'both'))
     runs-on: ubuntu-latest
+    env:
+      JIRA_CLOUD_URL: ${{ vars.JIRA_CLOUD_URL }}
+      JIRA_CLOUD_USERNAME: ${{ vars.ATLASSIAN_CLOUD_USER }}
+      JIRA_CLOUD_PASSWORD: ${{ secrets.ATLASSIAN_CLOUD_PAT }}
+      JIRA_TEST_PROJECT: ${{ vars.JIRA_TEST_PROJECT }}
+      JIRA_TEST_ISSUE: ${{ vars.JIRA_TEST_ISSUE }}
+      JIRA_TEST_USER: ${{ vars.JIRA_TEST_USER }}
+      JIRA_TEST_GROUP: ${{ vars.JIRA_TEST_GROUP }}
+      JIRA_TEST_FILTER: ${{ vars.JIRA_TEST_FILTER }}
+      JIRA_TEST_VERSION: ${{ vars.JIRA_TEST_VERSION }}
     steps:
-      - run: echo "Integration workflow scaffold. Branches may override this file."
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+
+      - run: Invoke-Build -Task TestIntegration -Tag Cloud -PesterVerbosity Detailed
+        shell: pwsh
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: Cloud-Integration-Tests
+          path: Test-Integration.xml
+
+  server_integration_tests:
+    name: Smoke Integration Tests (Dockerized Jira DC)
+    if: (github.event_name == 'schedule' && github.repository == 'AtlassianPS/JiraAgilePS') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.track == 'server' || inputs.track == 'both'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI_JIRA_TYPE: Server
+      CI_JIRA_URL: http://localhost:2990/jira
+      CI_JIRA_ADMIN: admin
+      CI_JIRA_ADMIN_PASSWORD: admin
+      CI_JIRA_USER: jira_user
+      CI_JIRA_USER_PASSWORD: jira
+      CI_JIRA_TEST_PROJECT: TEST
+    steps:
+      - uses: actions/checkout@v6
+
+      - run: docker compose up -d
+        shell: bash
+
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+
+      - run: ./Tools/Wait-JiraServer.ps1 -TimeoutSeconds 1200
+        shell: pwsh
+
+      - run: Invoke-Build -Task TestIntegration -Tag Server -PesterVerbosity Detailed
+        shell: pwsh
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: Server-Integration-Tests
+          path: Test-Integration.xml
+
+      - run: docker compose logs jira > jira-container.log
+        if: always()
+        shell: bash
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: Server-Jira-Container-Logs
+          path: jira-container.log
+
+      - run: docker compose down -v
+        if: always()
+        shell: bash

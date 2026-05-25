@@ -11,7 +11,8 @@ namespace AtlassianPS
         public enum BoardType
         {
             kanban,
-            scrum
+            scrum,
+            simple
         }
 
         public enum SprintState

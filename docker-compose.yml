@@ -1,0 +1,14 @@
+services:
+  jira:
+    image: moveworkforward/atlas-run-standalone:${JIRA_IMAGE_TAG:-jira-11}
+    platform: linux/amd64
+    entrypoint:
+      - /bin/sh
+      - -c
+      - atlas-mvn jira:run -DskipTests -Dallow.google.tracking=false
+    tty: true
+    stdin_open: true
+    ports:
+      - "2990:2990"
+    volumes:
+      - ./Tools/amps-jira-software-runner.pom.xml:/home/circleci/project/pom.xml:ro

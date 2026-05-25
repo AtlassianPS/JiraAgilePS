@@ -40,6 +40,19 @@ InModuleScope JiraAgilePS {
 
                 $pipelineResult.Id | Should -Be 7
             }
+
+            It "maps simple boards returned by Jira Cloud" {
+                $simpleBoardPayload = [pscustomobject]@{
+                    id   = 8
+                    name = 'Project board'
+                    type = 'simple'
+                    self = 'https://jira.example.com/rest/agile/1.0/board/8'
+                }
+
+                $simpleBoard = ConvertTo-Board -InputObject $simpleBoardPayload
+
+                $simpleBoard.Type | Should -Be ([AtlassianPS.JiraAgilePS.BoardType]::simple)
+            }
         }
     }
 }
