@@ -84,19 +84,16 @@ jobs:
           name: Server-Integration-Tests
           path: Test-Integration.xml
 
-      - name: Capture Jira container logs for debugging
+      - run: docker compose logs jira > jira-container.log
         if: always()
-        run: docker compose logs jira > jira-container.log
         shell: bash
 
-      - name: Upload Jira container logs
+      - uses: actions/upload-artifact@v7
         if: always()
-        uses: actions/upload-artifact@v7
         with:
           name: Server-Jira-Container-Logs
           path: jira-container.log
 
-      - name: Tear down Jira Data Center container
+      - run: docker compose down -v
         if: always()
-        run: docker compose down -v
         shell: bash
