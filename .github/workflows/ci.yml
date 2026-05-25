@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
       - name: Build
         run: Invoke-Build -Task ShowInfo, Clean, Build
@@ -45,7 +45,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
         with:
           ps-version: "5"
           skip-setup: "true"
@@ -86,7 +86,7 @@ jobs:
           - { os: macos-latest, name: "macOS" }
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
       - name: Download release artifact
         uses: actions/download-artifact@v8
@@ -109,8 +109,7 @@ jobs:
     name: Smoke Tests
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' ||
-      (github.event.pull_request.head.repo.full_name == github.repository &&
-       github.actor != 'dependabot[bot]')
+      github.event.pull_request.head.repo.full_name == github.repository
     env:
       JIRA_CLOUD_URL: ${{ vars.JIRA_CLOUD_URL }}
       JIRA_CLOUD_USERNAME: ${{ vars.ATLASSIAN_CLOUD_USER }}
@@ -119,35 +118,40 @@ jobs:
       JIRA_TEST_ISSUE: ${{ vars.JIRA_TEST_ISSUE }}
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
       - name: Check Cloud smoke credentials
         id: credentials
-        shell: pwsh
+        shell: bash
         run: |
-          $required = @(
-            'JIRA_CLOUD_URL',
-            'JIRA_CLOUD_USERNAME',
-            'JIRA_CLOUD_PASSWORD',
-            'JIRA_TEST_PROJECT',
-            'JIRA_TEST_ISSUE'
+          required=(
+            JIRA_CLOUD_URL
+            JIRA_CLOUD_USERNAME
+            JIRA_CLOUD_PASSWORD
+            JIRA_TEST_PROJECT
+            JIRA_TEST_ISSUE
           )
-          $missing = @($required | Where-Object { [string]::IsNullOrEmpty([Environment]::GetEnvironmentVariable($_)) })
-          if ($missing.Count -gt 0) {
-            "has_credentials=false" >> $env:GITHUB_OUTPUT
-            "Cloud smoke credentials are unavailable: $($missing -join ', '). Skipping smoke tests."
-            return
-          }
-          "has_credentials=true" >> $env:GITHUB_OUTPUT
+          missing=()
+          for name in "${required[@]}"; do
+            if [[ -z "${!name}" ]]; then
+              missing+=("$name")
+            fi
+          done
 
-      - name: Run Cloud smoke integration tests
+          if (( ${#missing[@]} > 0 )); then
+            printf 'has_credentials=false\n' >> "$GITHUB_OUTPUT"
+            printf 'Cloud smoke credentials are unavailable: %s. Skipping smoke tests.\n' "$(IFS=', '; echo "${missing[*]}")"
+            exit 0
+          fi
+
+          printf 'has_credentials=true\n' >> "$GITHUB_OUTPUT"
+
+      - run: Invoke-Build -Task TestIntegration -Tag Smoke -PesterVerbosity Detailed
         if: steps.credentials.outputs.has_credentials == 'true'
-        run: Invoke-Build -Task TestIntegration -Tag Smoke -PesterVerbosity Detailed
         shell: pwsh
 
-      - name: Upload smoke test results
+      - uses: actions/upload-artifact@v7
         if: always()
-        uses: actions/upload-artifact@v7
         with:
           name: Smoke-Tests
           path: Test-Integration.xml
@@ -158,7 +162,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
       - name: Validate release packaging path
         shell: pwsh
