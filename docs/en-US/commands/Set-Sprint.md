@@ -20,9 +20,9 @@ Set-Sprint [-Sprint] <Sprint[]> [-Name <String>] [-State <SprintState>] [-StartD
 
 ## DESCRIPTION
 
-`Set-Sprint` updates one or more Jira Agile sprints using the Jira Agile full-update endpoint.
+`Set-Sprint` updates one or more Jira Agile sprints using the Jira Agile partial-update endpoint.
 
-The command first retrieves the current sprint and then submits existing values plus the values you provide. Jira treats this endpoint as a full update, so fields missing from both the retrieved sprint and the command parameters may be set to null by Jira.
+Only the values you provide are submitted to Jira. Fields omitted from the command are left unchanged by Jira.
 
 When imported normally, run this command as `Set-JiraAgileSprint`.
 

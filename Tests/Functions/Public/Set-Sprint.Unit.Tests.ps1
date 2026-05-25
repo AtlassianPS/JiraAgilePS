@@ -21,19 +21,6 @@ Describe "Set-JiraAgileSprint" -Tag 'Unit' {
     }
 
     BeforeEach {
-        Mock Get-Sprint -ModuleName JiraAgilePS {
-            [AtlassianPS.JiraAgilePS.Sprint]@{
-                Id            = 21
-                Name          = 'Sprint 21'
-                State         = [AtlassianPS.JiraAgilePS.SprintState]::future
-                StartDate     = [DateTime]'2026-06-01T00:00:00Z'
-                EndDate       = [DateTime]'2026-06-14T00:00:00Z'
-                OriginBoardId = 9
-                Goal          = 'Old goal'
-                Self          = [Uri]"$jiraServer/rest/agile/1.0/sprint/21"
-            }
-        }
-
         Mock Invoke-JiraMethod -ModuleName JiraAgilePS {
             [pscustomobject]@{
                 id            = 21
@@ -78,20 +65,23 @@ Describe "Set-JiraAgileSprint" -Tag 'Unit' {
     }
 
     Describe "Behavior" {
-        It "gets current sprint details, puts an update payload, and returns a typed sprint" {
+        It "posts a partial update payload and returns a typed sprint" {
             $sprint = [AtlassianPS.JiraAgilePS.Sprint]::new(21)
+            $startDate = [DateTime]'2026-06-01T00:00:00Z'
+            $endDate = [DateTime]'2026-06-14T00:00:00Z'
 
-            $result = Set-JiraAgileSprint -Sprint $sprint -Name 'Updated Sprint' -State active -Goal 'Updated goal' -Confirm:$false
+            $result = Set-JiraAgileSprint -Sprint $sprint -Name 'Updated Sprint' -State active -StartDate $startDate -EndDate $endDate -Goal 'Updated goal' -Confirm:$false
 
-            Should -Invoke -CommandName Get-Sprint -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It
             Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
                 $payload = $Body | ConvertFrom-Json
-                $Method -eq "PUT" -and
+                $Method -eq "POST" -and
                 $Uri -eq "$jiraServer/rest/agile/1.0/sprint/21" -and
                 $payload.name -eq 'Updated Sprint' -and
                 $payload.state -eq 'active' -and
                 $payload.goal -eq 'Updated goal' -and
-                $payload.originBoardId -eq 9
+                -not ($payload.PSObject.Properties.Name -contains 'originBoardId') -and
+                $Body -match '"startDate"\s*:\s*"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2}"' -and
+                $Body -match '"endDate"\s*:\s*"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2}"'
             }
             $result | Should -BeOfType ([AtlassianPS.JiraAgilePS.Sprint])
             $result.Name | Should -Be 'Updated Sprint'
@@ -109,7 +99,6 @@ Describe "Set-JiraAgileSprint" -Tag 'Unit' {
 
             Set-JiraAgileSprint -Sprint $sprint -Name 'Updated Sprint' -WhatIf
 
-            Should -Invoke -CommandName Get-Sprint -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It
             Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 0 -Scope It
         }
     }

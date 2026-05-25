@@ -48,8 +48,8 @@ function New-Sprint {
             name          = $Name
             originBoardId = $Board.Id
         }
-        if ($PSBoundParameters.ContainsKey('StartDate')) { $body['startDate'] = $StartDate }
-        if ($PSBoundParameters.ContainsKey('EndDate')) { $body['endDate'] = $EndDate }
+        if ($PSBoundParameters.ContainsKey('StartDate')) { $body['startDate'] = ConvertTo-JiraAgileDateString $StartDate }
+        if ($PSBoundParameters.ContainsKey('EndDate')) { $body['endDate'] = ConvertTo-JiraAgileDateString $EndDate }
         if ($PSBoundParameters.ContainsKey('Goal')) { $body['goal'] = $Goal }
 
         if ($PSCmdlet.ShouldProcess($Name, "Create Jira Agile sprint on board $($Board.Id)")) {

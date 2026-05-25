@@ -67,8 +67,10 @@ Describe "New-JiraAgileSprint" -Tag 'Unit' {
     Describe "Behavior" {
         It "posts a sprint create payload and returns a typed sprint" {
             $board = [AtlassianPS.JiraAgilePS.Board]::new(9)
+            $startDate = [DateTime]'2026-06-01T00:00:00Z'
+            $endDate = [DateTime]'2026-06-14T00:00:00Z'
 
-            $result = New-JiraAgileSprint -Board $board -Name 'Sprint 101' -Goal 'Ship write cmdlets' -Confirm:$false
+            $result = New-JiraAgileSprint -Board $board -Name 'Sprint 101' -StartDate $startDate -EndDate $endDate -Goal 'Ship write cmdlets' -Confirm:$false
 
             Should -Invoke -CommandName Invoke-JiraMethod -ModuleName JiraAgilePS -Exactly -Times 1 -Scope It -ParameterFilter {
                 $payload = $Body | ConvertFrom-Json
@@ -76,7 +78,9 @@ Describe "New-JiraAgileSprint" -Tag 'Unit' {
                 $Uri -eq "$jiraServer/rest/agile/1.0/sprint" -and
                 $payload.name -eq 'Sprint 101' -and
                 $payload.originBoardId -eq 9 -and
-                $payload.goal -eq 'Ship write cmdlets'
+                $payload.goal -eq 'Ship write cmdlets' -and
+                $Body -match '"startDate"\s*:\s*"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2}"' -and
+                $Body -match '"endDate"\s*:\s*"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2}"'
             }
             $result | Should -BeOfType ([AtlassianPS.JiraAgilePS.Sprint])
             $result.Id | Should -Be 101

@@ -49,26 +49,17 @@ function Set-Sprint {
                 throw "[$($MyInvocation.MyCommand.Name)] Sprint input must contain a non-zero Id."
             }
 
-            $currentSprint = Get-Sprint -Sprint $_sprint -Credential $Credential -ErrorAction Stop
-
             $body = @{ }
-            if ($null -ne $currentSprint.Name) { $body['name'] = $currentSprint.Name }
-            if ($null -ne $currentSprint.State) { $body['state'] = $currentSprint.State.ToString() }
-            if ($null -ne $currentSprint.StartDate) { $body['startDate'] = $currentSprint.StartDate }
-            if ($null -ne $currentSprint.EndDate) { $body['endDate'] = $currentSprint.EndDate }
-            if ($currentSprint.OriginBoardId -ne 0) { $body['originBoardId'] = $currentSprint.OriginBoardId }
-            if ($null -ne $currentSprint.Goal) { $body['goal'] = $currentSprint.Goal }
-
             if ($PSBoundParameters.ContainsKey('Name')) { $body['name'] = $Name }
             if ($PSBoundParameters.ContainsKey('State')) { $body['state'] = $State.ToString() }
-            if ($PSBoundParameters.ContainsKey('StartDate')) { $body['startDate'] = $StartDate }
-            if ($PSBoundParameters.ContainsKey('EndDate')) { $body['endDate'] = $EndDate }
+            if ($PSBoundParameters.ContainsKey('StartDate')) { $body['startDate'] = ConvertTo-JiraAgileDateString $StartDate }
+            if ($PSBoundParameters.ContainsKey('EndDate')) { $body['endDate'] = ConvertTo-JiraAgileDateString $EndDate }
             if ($PSBoundParameters.ContainsKey('Goal')) { $body['goal'] = $Goal }
 
             if ($PSCmdlet.ShouldProcess("Sprint $($_sprint.Id)", 'Update Jira Agile sprint')) {
                 $requestParameter = @{
                     Uri        = $resourceUrl -f $_sprint.Id
-                    Method     = "PUT"
+                    Method     = "POST"
                     Body       = ConvertTo-Json $body
                     Credential = $Credential
                     Cmdlet     = $PSCmdlet
