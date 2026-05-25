@@ -40,13 +40,11 @@ jobs:
       - uses: actions/checkout@v6
       - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
-      - name: Run Cloud integration tests
-        run: Invoke-Build -Task TestIntegration -Tag Cloud -PesterVerbosity Detailed
+      - run: Invoke-Build -Task TestIntegration -Tag Cloud -PesterVerbosity Detailed
         shell: pwsh
 
-      - name: Upload test results
+      - uses: actions/upload-artifact@v7
         if: always()
-        uses: actions/upload-artifact@v7
         with:
           name: Cloud-Integration-Tests
           path: Test-Integration.xml
@@ -69,8 +67,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Start Jira Data Center container
-        run: docker compose up -d
+      - run: docker compose up -d
         shell: bash
 
       - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
