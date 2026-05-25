@@ -65,7 +65,7 @@ jobs:
       CI_JIRA_ADMIN_PASSWORD: admin
       CI_JIRA_USER: jira_user
       CI_JIRA_USER_PASSWORD: jira
-      JIRA_TEST_PROJECT: TEST
+      CI_JIRA_TEST_PROJECT: TEST
     steps:
       - uses: actions/checkout@v6
 

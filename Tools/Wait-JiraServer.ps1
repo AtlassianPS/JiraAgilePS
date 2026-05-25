@@ -22,6 +22,8 @@ $ErrorActionPreference = 'Stop'
 $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
 $serverInfoUrl = "$($BaseUrl.TrimEnd('/'))/rest/api/2/serverInfo"
 $agileUrl = "$($BaseUrl.TrimEnd('/'))/rest/agile/1.0/board?maxResults=1"
+$projectUrl = "$($BaseUrl.TrimEnd('/'))/rest/api/2/project"
+$projectKey = 'TEST'
 $authPair = "${Username}:${Password}"
 $headers = @{ Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($authPair)) }
 
@@ -56,4 +58,30 @@ try {
 }
 catch {
     throw "Jira Data Center is reachable, but Jira Software Agile REST is not available at $agileUrl. The Docker image is not valid for JiraAgilePS integration coverage. $($_.Exception.Message)"
+}
+
+try {
+    $null = Invoke-WebRequest -Uri "$projectUrl/$projectKey" -Headers $headers -UseBasicParsing -TimeoutSec 30 -ErrorAction Stop
+    Write-Host "Jira Data Center test project '$projectKey' is available." -ForegroundColor Green
+    return
+}
+catch {
+    Write-Host "Provisioning Jira Data Center test project '$projectKey'." -ForegroundColor Cyan
+}
+
+$projectBody = @{
+    name               = 'Test'
+    key                = $projectKey
+    projectTypeKey     = 'software'
+    projectTemplateKey = 'com.pyxis.greenhopper.jira:gh-scrum-template'
+    lead               = $Username
+    assigneeType       = 'PROJECT_LEAD'
+} | ConvertTo-Json -Compress
+
+try {
+    $null = Invoke-WebRequest -Uri $projectUrl -Method Post -Headers $headers -ContentType 'application/json' -Body $projectBody -UseBasicParsing -TimeoutSec 60 -ErrorAction Stop
+    Write-Host "Jira Data Center test project '$projectKey' was provisioned." -ForegroundColor Green
+}
+catch {
+    throw "Jira Data Center is reachable, but test project '$projectKey' could not be provisioned. $($_.Exception.Message)"
 }

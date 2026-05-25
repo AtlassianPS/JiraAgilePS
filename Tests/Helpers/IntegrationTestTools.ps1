@@ -136,12 +136,12 @@ function Initialize-IntegrationEnvironment {
             UsernameNormal = $env:CI_JIRA_USER
             PasswordNormal = $env:CI_JIRA_USER_PASSWORD
             HasNormalUser  = -not [string]::IsNullOrEmpty($env:CI_JIRA_USER)
-            TestProject    = if ($env:JIRA_TEST_PROJECT) { $env:JIRA_TEST_PROJECT } else { 'TEST' }
-            TestIssue      = $env:JIRA_TEST_ISSUE
-            TestUser       = $env:CI_JIRA_USER
-            TestGroup      = $env:JIRA_TEST_GROUP
-            TestFilter     = $env:JIRA_TEST_FILTER
-            TestVersion    = $env:JIRA_TEST_VERSION
+            TestProject    = if ($env:CI_JIRA_TEST_PROJECT) { $env:CI_JIRA_TEST_PROJECT } else { 'TEST' }
+            TestIssue      = $env:CI_JIRA_TEST_ISSUE
+            TestUser       = if ($env:CI_JIRA_TEST_USER) { $env:CI_JIRA_TEST_USER } else { $env:CI_JIRA_ADMIN }
+            TestGroup      = $env:CI_JIRA_TEST_GROUP
+            TestFilter     = $env:CI_JIRA_TEST_FILTER
+            TestVersion    = $env:CI_JIRA_TEST_VERSION
             ReadOnly       = $env:JIRA_TEST_READONLY -eq 'true'
             VerboseOutput  = $env:JIRA_TEST_VERBOSE -eq 'true'
         }

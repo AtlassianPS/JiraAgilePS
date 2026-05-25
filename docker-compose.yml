@@ -5,7 +5,7 @@ services:
     entrypoint:
       - /bin/sh
       - -c
-      - atlas-mvn -U jira:run -DskipTests -Dallow.google.tracking=false
+      - atlas-mvn jira:run -DskipTests -Dallow.google.tracking=false
     tty: true
     stdin_open: true
     ports:
