@@ -28,10 +28,15 @@ function Sync-PSScriptAnalyzerSetting {
 if (-not ($gallery = Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
     Write-Host "Installing PackageProvider NuGet"
     $null = Install-PackageProvider -Name NuGet -Force -ErrorAction SilentlyContinue
+    Register-PSRepository -Default -ErrorAction SilentlyContinue
+    $gallery = Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue
+    if (-not $gallery) {
+        throw "Unable to register the default PSGallery repository."
+    }
 }
 
 # Make PSGallery trusted, to aviod a confirmation in the console
-if (-not ($gallery.Trusted)) {
+if ($gallery -and -not ($gallery.Trusted)) {
     Write-Host "Trusting PSGallery"
     Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted -ErrorAction SilentlyContinue
 }
