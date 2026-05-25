@@ -39,7 +39,8 @@
        c. Both use the JiraAgilePS-IntTest- prefix to identify test resources
 
     5. TAGGING: All Describe blocks MUST include -Tag 'Integration'
-       Add -Tag 'Smoke' for tests that should run on every PR
+       Add -Tag 'Smoke' only for the minimal Cloud tests that should run on every PR.
+       Add -Tag 'Full' for broader scheduled/manual Cloud + Server parity tests.
 
     6. SKIP HANDLING:
        - $script:Skip (from BeforeDiscovery) skips entire Describe when env not configured
