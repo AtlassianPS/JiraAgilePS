@@ -207,7 +207,8 @@ InModuleScope JiraAgilePS {
                 return
             }
 
-            $newSprint = New-JiraAgileSprint -Board $script:createdBoard -Name (New-TestResourceName -Type 'Sprint') -Goal 'Integration write coverage' -Confirm:$false -ErrorAction Stop
+            $sprintName = "JAPS-$([Guid]::NewGuid().ToString('N').Substring(0, 8))"
+            $newSprint = New-JiraAgileSprint -Board $script:createdBoard -Name $sprintName -Goal 'Integration write coverage' -Confirm:$false -ErrorAction Stop
 
             $newSprint.PSObject.TypeNames[0] | Should -Be 'AtlassianPS.JiraAgilePS.Sprint'
             $newSprint.Id | Should -Not -BeNullOrEmpty
@@ -245,7 +246,8 @@ InModuleScope JiraAgilePS {
                 return
             }
 
-            $sprintToDelete = New-JiraAgileSprint -Board $script:createdBoard -Name (New-TestResourceName -Type 'SprintDelete') -Confirm:$false -ErrorAction Stop
+            $sprintName = "JAPS-$([Guid]::NewGuid().ToString('N').Substring(0, 8))"
+            $sprintToDelete = New-JiraAgileSprint -Board $script:createdBoard -Name $sprintName -Confirm:$false -ErrorAction Stop
 
             { Remove-JiraAgileSprint -Sprint $sprintToDelete -Confirm:$false -ErrorAction Stop } | Should -Not -Throw
         }
