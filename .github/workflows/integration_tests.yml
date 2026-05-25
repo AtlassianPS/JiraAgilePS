@@ -78,9 +78,8 @@ jobs:
       - run: Invoke-Build -Task TestIntegration -Tag Server -PesterVerbosity Detailed
         shell: pwsh
 
-      - name: Upload integration test results
+      - uses: actions/upload-artifact@v7
         if: always()
-        uses: actions/upload-artifact@v7
         with:
           name: Server-Integration-Tests
           path: Test-Integration.xml
