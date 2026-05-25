@@ -1,4 +1,4 @@
-﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
 
 BeforeDiscovery {
     . "$PSScriptRoot/../Helpers/TestTools.ps1"
@@ -199,6 +199,55 @@ InModuleScope JiraAgilePS {
             }
 
             { Add-JiraAgileIssueToSprint -Issue $script:createdIssue -Sprint $script:sprints[0] -ErrorAction Stop } | Should -Not -Throw
+        }
+
+        It "can create a sprint through the public write cmdlet" {
+            if ($script:env.ReadOnly -or -not $script:createdBoard) {
+                Set-ItResult -Skipped -Because 'A writable temporary board is required for New-JiraAgileSprint coverage.'
+                return
+            }
+
+            $newSprint = New-JiraAgileSprint -Board $script:createdBoard -Name (New-TestResourceName -Type 'Sprint') -Goal 'Integration write coverage' -Confirm:$false -ErrorAction Stop
+
+            $newSprint.PSObject.TypeNames[0] | Should -Be 'AtlassianPS.JiraAgilePS.Sprint'
+            $newSprint.Id | Should -Not -BeNullOrEmpty
+
+            Invoke-JiraMethod -Uri "$($script:env.CloudUrl)/rest/agile/1.0/sprint/$($newSprint.Id)" -Method DELETE -ErrorAction SilentlyContinue
+        }
+
+        It "can update a sprint through the public write cmdlet" {
+            if ($script:env.ReadOnly -or -not $script:createdSprint) {
+                Set-ItResult -Skipped -Because 'A writable temporary sprint is required for Set-JiraAgileSprint coverage.'
+                return
+            }
+
+            $updatedGoal = New-TestResourceName -Type 'SprintGoal'
+            $updatedSprint = Set-JiraAgileSprint -Sprint $script:createdSprint -Goal $updatedGoal -Confirm:$false -ErrorAction Stop
+
+            $updatedSprint.PSObject.TypeNames[0] | Should -Be 'AtlassianPS.JiraAgilePS.Sprint'
+            $updatedSprint.Goal | Should -Be $updatedGoal
+        }
+
+        It "can move an issue to backlog through the public write cmdlet" {
+            if ($script:env.ReadOnly -or -not $script:createdIssue -or -not $script:createdSprint) {
+                Set-ItResult -Skipped -Because 'A temporary issue and sprint are required for Move-JiraAgileIssueToBacklog coverage.'
+                return
+            }
+
+            Add-JiraAgileIssueToSprint -Issue $script:createdIssue -Sprint $script:createdSprint -ErrorAction Stop
+
+            { Move-JiraAgileIssueToBacklog -Issue $script:createdIssue -Confirm:$false -ErrorAction Stop } | Should -Not -Throw
+        }
+
+        It "can delete a sprint through the public write cmdlet" {
+            if ($script:env.ReadOnly -or -not $script:createdBoard) {
+                Set-ItResult -Skipped -Because 'A writable temporary board is required for Remove-JiraAgileSprint coverage.'
+                return
+            }
+
+            $sprintToDelete = New-JiraAgileSprint -Board $script:createdBoard -Name (New-TestResourceName -Type 'SprintDelete') -Confirm:$false -ErrorAction Stop
+
+            { Remove-JiraAgileSprint -Sprint $sprintToDelete -Confirm:$false -ErrorAction Stop } | Should -Not -Throw
         }
     }
 }
