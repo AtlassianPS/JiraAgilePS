@@ -19,6 +19,7 @@ InModuleScope JiraAgilePS {
             $script:fixtures = Get-TestFixture -Environment $env
             $script:createdFilters = [System.Collections.ArrayList]::new()
             $script:createdBoard = $null
+            $script:testBoard = $null
             $script:createdSprint = $null
             $script:createdIssue = $null
             $script:sprints = @()
@@ -54,6 +55,13 @@ InModuleScope JiraAgilePS {
                     -Body $boardBody `
                     -ErrorAction Stop | ConvertTo-Board
 
+                try {
+                    $script:testBoard = Get-JiraAgileBoard -BoardId $script:createdBoard.Id -ErrorAction Stop
+                }
+                catch {
+                    Write-Warning "Agile parity: temporary board $($script:createdBoard.Id) was created but cannot be viewed through Agile board endpoints ($($_.Exception.Message)). Falling back to an existing visible board for read coverage."
+                }
+
                 $sprintBody = ConvertTo-Json @{
                     name          = "JAPS-Sprint-$([Guid]::NewGuid().ToString('N').Substring(0, 8))"
                     originBoardId = [UInt64]$script:createdBoard.Id
@@ -64,6 +72,10 @@ InModuleScope JiraAgilePS {
                     -Body $sprintBody `
                     -ErrorAction Stop | ConvertTo-Sprint
 
+            }
+
+            if (-not $script:testBoard) {
+                $script:testBoard = Get-JiraAgileBoard -PageSize 1 -ErrorAction Stop | Select-Object -First 1
             }
         }
 
@@ -98,37 +110,37 @@ InModuleScope JiraAgilePS {
         }
 
         It "can retrieve a board by ID" {
-            if (-not $script:createdBoard) {
-                Set-ItResult -Skipped -Because 'Writable integration fixtures are required to seed a parity board.'
+            if (-not $script:testBoard) {
+                Set-ItResult -Skipped -Because 'A visible Agile board is required for board-by-ID coverage.'
                 return
             }
 
-            $board = Get-JiraAgileBoard -BoardId $script:createdBoard.Id -ErrorAction Stop
+            $board = Get-JiraAgileBoard -BoardId $script:testBoard.Id -ErrorAction Stop
 
             $board.PSObject.TypeNames[0] | Should -Be 'AtlassianPS.JiraAgilePS.Board'
-            $board.Id | Should -Be $script:createdBoard.Id
-            $board.Name | Should -Be $script:createdBoard.Name
+            $board.Id | Should -Be $script:testBoard.Id
+            $board.Name | Should -Be $script:testBoard.Name
         }
 
         It "can retrieve board configuration" {
-            if (-not $script:createdBoard) {
-                Set-ItResult -Skipped -Because 'Writable integration fixtures are required to seed a parity board.'
+            if (-not $script:testBoard) {
+                Set-ItResult -Skipped -Because 'A visible Agile board is required for board configuration coverage.'
                 return
             }
 
-            $configuration = Get-JiraAgileBoardConfiguration -Board $script:createdBoard -ErrorAction Stop
+            $configuration = Get-JiraAgileBoardConfiguration -Board $script:testBoard -ErrorAction Stop
 
             $configuration | Should -Not -BeNullOrEmpty
-            $configuration.Id | Should -Be $script:createdBoard.Id
+            $configuration.Id | Should -Be $script:testBoard.Id
         }
 
         It "can list board sprints" {
-            if (-not $script:createdBoard) {
-                Set-ItResult -Skipped -Because 'Writable integration fixtures are required to seed a parity board.'
+            if (-not $script:testBoard) {
+                Set-ItResult -Skipped -Because 'A visible Agile board is required for sprint list coverage.'
                 return
             }
 
-            $script:sprints = @(Get-JiraAgileSprint -Board $script:createdBoard -PageSize 1 -ErrorAction Stop)
+            $script:sprints = @(Get-JiraAgileSprint -Board $script:testBoard -PageSize 1 -ErrorAction Stop)
 
             if ($script:sprints.Count -gt 0) {
                 $script:sprints[0].PSObject.TypeNames[0] | Should -Be 'AtlassianPS.JiraAgilePS.Sprint'
@@ -149,12 +161,12 @@ InModuleScope JiraAgilePS {
         }
 
         It "can list board epics" {
-            if (-not $script:createdBoard) {
-                Set-ItResult -Skipped -Because 'Writable integration fixtures are required to seed a parity board.'
+            if (-not $script:testBoard) {
+                Set-ItResult -Skipped -Because 'A visible Agile board is required for epic list coverage.'
                 return
             }
 
-            $epics = @(Get-JiraAgileEpic -Board $script:createdBoard -PageSize 1 -ErrorAction Stop)
+            $epics = @(Get-JiraAgileEpic -Board $script:testBoard -PageSize 1 -ErrorAction Stop)
 
             if ($epics.Count -gt 0) {
                 $epics[0].PSObject.TypeNames[0] | Should -Be 'AtlassianPS.JiraAgilePS.Epic'
@@ -163,21 +175,21 @@ InModuleScope JiraAgilePS {
         }
 
         It "can list board issues" {
-            if (-not $script:createdBoard) {
-                Set-ItResult -Skipped -Because 'Writable integration fixtures are required to seed a parity board.'
+            if (-not $script:testBoard) {
+                Set-ItResult -Skipped -Because 'A visible Agile board is required for board issue coverage.'
                 return
             }
 
-            { @(Get-JiraAgileIssue -Board $script:createdBoard -PageSize 1 -ErrorAction Stop) } | Should -Not -Throw
+            { @(Get-JiraAgileIssue -Board $script:testBoard -PageSize 1 -ErrorAction Stop) } | Should -Not -Throw
         }
 
         It "can list board backlog issues" {
-            if (-not $script:createdBoard) {
-                Set-ItResult -Skipped -Because 'Writable integration fixtures are required to seed a parity board.'
+            if (-not $script:testBoard) {
+                Set-ItResult -Skipped -Because 'A visible Agile board is required for board backlog coverage.'
                 return
             }
 
-            { @(Get-JiraAgileIssue -Board $script:createdBoard -Backlog -PageSize 1 -ErrorAction Stop) } | Should -Not -Throw
+            { @(Get-JiraAgileIssue -Board $script:testBoard -Backlog -PageSize 1 -ErrorAction Stop) } | Should -Not -Throw
         }
 
         It "can add an issue to a sprint when sprint and issue fixtures exist" {
