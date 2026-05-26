@@ -108,8 +108,12 @@ jobs:
   smoke_tests:
     name: Smoke Tests
     runs-on: ubuntu-latest
+    # Skip on fork PRs and Dependabot PRs because secrets are not exposed there.
+    # First-party PRs and pushes to master gate on smoke tests, and release.yml
+    # requires a successful CI workflow for the exact tagged commit.
     if: github.event_name != 'pull_request' ||
-      github.event.pull_request.head.repo.full_name == github.repository
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.actor != 'dependabot[bot]')
     env:
       JIRA_CLOUD_URL: ${{ vars.JIRA_CLOUD_URL }}
       JIRA_CLOUD_USERNAME: ${{ vars.ATLASSIAN_CLOUD_USER }}
@@ -120,34 +124,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
-      - name: Check Cloud smoke credentials
-        id: credentials
-        shell: bash
-        run: |
-          required=(
-            JIRA_CLOUD_URL
-            JIRA_CLOUD_USERNAME
-            JIRA_CLOUD_PASSWORD
-            JIRA_TEST_PROJECT
-            JIRA_TEST_ISSUE
-          )
-          missing=()
-          for name in "${required[@]}"; do
-            if [[ -z "${!name}" ]]; then
-              missing+=("$name")
-            fi
-          done
-
-          if (( ${#missing[@]} > 0 )); then
-            printf 'has_credentials=false\n' >> "$GITHUB_OUTPUT"
-            printf 'Cloud smoke credentials are unavailable: %s. Skipping smoke tests.\n' "$(IFS=', '; echo "${missing[*]}")"
-            exit 0
-          fi
-
-          printf 'has_credentials=true\n' >> "$GITHUB_OUTPUT"
-
       - run: Invoke-Build -Task TestIntegration -Tag Smoke -PesterVerbosity Detailed
-        if: steps.credentials.outputs.has_credentials == 'true'
         shell: pwsh
 
       - uses: actions/upload-artifact@v7

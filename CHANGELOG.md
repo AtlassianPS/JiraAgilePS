@@ -28,6 +28,7 @@
 
 - Harmonized integration test environment setup with JiraPS by adopting `.env.example` and a shared-style `.env` loader/validator in `Tests/Helpers/IntegrationTestTools.ps1`.
 - Added JiraPS-style test guidance and private helper/converter unit coverage for JiraAgilePS.
+- Documented the release readiness checklist, required secrets, dry-run validation, prerelease path, and stable release path for JiraAgilePS v0.1.0.
 
 ### Fixed
 
