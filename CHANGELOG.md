@@ -20,7 +20,7 @@
 - Added first-release write cmdlets for Jira Agile sprint and backlog operations:
   - `Move-JiraAgileIssueToBacklog` for `POST /rest/agile/1.0/backlog/issue`
   - `New-JiraAgileSprint` for `POST /rest/agile/1.0/sprint`
-  - `Set-JiraAgileSprint` for `PUT /rest/agile/1.0/sprint/{sprintId}`
+  - `Set-JiraAgileSprint` for `POST /rest/agile/1.0/sprint/{sprintId}`
   - `Remove-JiraAgileSprint` for `DELETE /rest/agile/1.0/sprint/{sprintId}`
 - Added conversion helpers for paged Agile issue/epic responses and board configuration payloads
 
