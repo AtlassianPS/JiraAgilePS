@@ -1,4 +1,4 @@
-# JiraAgilePS release checklist
+# Releasing JiraAgilePS
 
 Issue: [#17](https://github.com/AtlassianPS/JiraAgilePS/issues/17)
 
@@ -6,7 +6,7 @@ Use this checklist for the first production release and later JiraAgilePS releas
 
 ## Release readiness
 
-- Confirm the first-release cmdlet scope in [agile-api-coverage-matrix.md](agile-api-coverage-matrix.md) is complete or intentionally deferred.
+- Confirm the first-release cmdlet scope in [agile-api-coverage-matrix.md](../../docs/agile-api-coverage-matrix.md) is complete or intentionally deferred.
 - Confirm the exact commit being tagged has a green `ci.yml` workflow run.
   `release.yml` downloads the `Release` artifact from a successful `ci.yml` run for the tagged commit and fails if that artifact is unavailable.
 - Confirm the green `ci.yml` run includes `Lint`, build, matrix tests, Cloud smoke tests, `Release Dry Run`, and `CI Result`.

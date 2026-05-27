@@ -68,6 +68,7 @@ Notes for this repository's current legacy state:
 
 - `ci.yml` runs on `master` push/PR and executes build + matrix tests (Windows PS5/PS7, Ubuntu, macOS).
 - `release.yml` handles tagged releases (`v*`) and consumes the `Release` artifact produced by `ci.yml` for the tagged commit.
+- `.github/ai-context/releasing.md` documents release readiness, required secrets, prerelease validation, and stable release verification.
 - Keep workflow assumptions aligned with this flow when updating instructions or build logic.
 
 ## When Working on This Project
