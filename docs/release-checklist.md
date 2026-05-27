@@ -9,7 +9,7 @@ Use this checklist for the first production release and later JiraAgilePS releas
 - Confirm the first-release cmdlet scope in [agile-api-coverage-matrix.md](agile-api-coverage-matrix.md) is complete or intentionally deferred.
 - Confirm the exact commit being tagged has a green `ci.yml` workflow run.
   `release.yml` downloads the `Release` artifact from a successful `ci.yml` run for the tagged commit and fails if that artifact is unavailable.
-- Confirm the green `ci.yml` run includes build, matrix tests, Cloud smoke tests, `Release Dry Run`, and `CI Result`.
+- Confirm the green `ci.yml` run includes `Lint`, build, matrix tests, Cloud smoke tests, `Release Dry Run`, and `CI Result`.
 - Confirm Cloud smoke tests only skip for contexts where secrets are intentionally unavailable, such as fork or Dependabot pull requests.
   Pushes to `master` and first-party pull requests must run smoke tests successfully.
 - Run broader Cloud and Server integration tracks before a production release when credentials and Docker are available.
