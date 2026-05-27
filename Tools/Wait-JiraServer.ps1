@@ -3,6 +3,7 @@
     Waits for the Dockerized Jira Data Center test instance to become reachable.
 #>
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Diagnostic CI script writes progress banners for Actions logs.')]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', 'Password', Justification = 'Dockerized local Jira test fixture uses a fixed default admin password.')]
 [CmdletBinding()]
 param(
     [Parameter()]
