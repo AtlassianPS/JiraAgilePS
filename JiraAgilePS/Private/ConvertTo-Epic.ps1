@@ -28,7 +28,9 @@ function ConvertTo-Epic {
                     Key,
                     Name,
                     Summary,
-                    @{ Name = 'Color'; Expression = {
+                    @{
+                        Name       = 'Color'
+                        Expression = {
                             if ($null -eq $object.color) {
                                 $null
                             }
@@ -44,7 +46,8 @@ function ConvertTo-Epic {
                             else {
                                 [String]$object.color
                             }
-                        } },
+                        }
+                    },
                     @{ Name = 'Done'; Expression = { [bool]$object.done } },
                     Self
                 )
