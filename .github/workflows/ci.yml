@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@6fe5d05db84cdd10c9e4284e235a8f359c9537ad # v0.1.11
 
       - run: Invoke-Build -Task Lint
         shell: pwsh
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@6fe5d05db84cdd10c9e4284e235a8f359c9537ad # v0.1.11
 
       - name: Build
         run: Invoke-Build -Task ShowInfo, Clean, Build
@@ -56,7 +56,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@6fe5d05db84cdd10c9e4284e235a8f359c9537ad # v0.1.11
         with:
           ps-version: "5"
           skip-setup: "true"
@@ -97,7 +97,7 @@ jobs:
           - { os: macos-latest, name: "macOS" }
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@6fe5d05db84cdd10c9e4284e235a8f359c9537ad # v0.1.11
 
       - name: Download release artifact
         uses: actions/download-artifact@v8
@@ -134,7 +134,7 @@ jobs:
       JIRA_TEST_ISSUE: ${{ vars.JIRA_TEST_ISSUE }}
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@6fe5d05db84cdd10c9e4284e235a8f359c9537ad # v0.1.11
 
       - run: Invoke-Build -Task TestIntegration -Tag Smoke -PesterVerbosity Detailed
         shell: pwsh
@@ -151,12 +151,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@6fe5d05db84cdd10c9e4284e235a8f359c9537ad # v0.1.11
 
       - name: Validate release packaging path
         shell: pwsh
         run: |
-          Invoke-Build -Task Clean, Build, SetVersion, Package -VersionToPublish v9999.0.0-alpha1
+          $sourceManifestData = Import-PowerShellDataFile -Path './JiraAgilePS/JiraAgilePS.psd1'
+          $dryRunVersion = "v$($sourceManifestData.ModuleVersion)"
+          Invoke-Build -Task Clean, Build, SetVersion, Package -VersionToPublish $dryRunVersion
 
           $manifestPath = './Release/JiraAgilePS/JiraAgilePS.psd1'
           $packagePath = './Release/JiraAgilePS.zip'
@@ -169,13 +171,13 @@ jobs:
           }
 
           $manifest = Test-ModuleManifest -Path $manifestPath -ErrorAction Stop -WarningAction SilentlyContinue
-          if ($manifest.Version.ToString() -ne '9999.0.0') {
-            throw "Expected manifest version 9999.0.0, got $($manifest.Version)"
+          if ($manifest.Version.ToString() -ne $sourceManifestData.ModuleVersion) {
+            throw "Expected manifest version $($sourceManifestData.ModuleVersion), got $($manifest.Version)"
           }
 
           $manifestData = Import-PowerShellDataFile -Path $manifestPath
-          if ($manifestData.PrivateData.PSData.Prerelease -ne 'alpha1') {
-            throw "Expected prerelease alpha1, got '$($manifestData.PrivateData.PSData.Prerelease)'"
+          if ($manifestData.PrivateData.PSData.ReleaseNotes -notmatch '\S') {
+            throw 'Expected manifest release notes to be populated from CHANGELOG.md.'
           }
 
   ci-required:

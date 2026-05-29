@@ -5,6 +5,16 @@
 param()
 
 $psScriptAnalyzerSettingsPath = Join-Path (Join-Path $PSScriptRoot '..') 'PSScriptAnalyzerSettings.psd1'
+$buildRequirements = Import-PowerShellDataFile -Path (Join-Path -Path $PSScriptRoot -ChildPath 'build.requirements.psd1')
+$standardsRequirement = $buildRequirements |
+    Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
+    Select-Object -First 1
+
+if (-not $standardsRequirement) {
+    throw 'AtlassianPS.Standards is missing from Tools/build.requirements.psd1.'
+}
+
+$standardsVersion = [string] $standardsRequirement.RequiredVersion
 
 function Sync-PSScriptAnalyzerSetting {
     [CmdletBinding()]
@@ -13,7 +23,7 @@ function Sync-PSScriptAnalyzerSetting {
     Write-Host "Syncing PSScriptAnalyzer settings from AtlassianPS.Standards"
 
     try {
-        Import-Module AtlassianPS.Standards -RequiredVersion '0.1.2' -Force -ErrorAction Stop
+        Import-Module AtlassianPS.Standards -RequiredVersion $standardsVersion -Force -ErrorAction Stop
         $resolvedSettingsPath = Sync-AtlassianPSScriptAnalyzerSettings `
             -DestinationPath $psScriptAnalyzerSettingsPath `
             -ErrorAction Stop

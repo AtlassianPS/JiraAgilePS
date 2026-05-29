@@ -40,7 +40,7 @@ Describe "General project validation" -Tag Unit {
         [Version]($manifest.Version) | Should -BeOfType [Version]
     }
 
-    It "module manifest only defines major and minor versions" {
-        $manifest.Version | Should -Match '^\d+\.\d+$'
+    It "module manifest uses a three-part semantic version" {
+        $manifest.Version | Should -Match '^\d+\.\d+\.\d+$'
     }
 }

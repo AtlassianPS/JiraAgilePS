@@ -1,5 +1,3 @@
-#requires -Modules @{ ModuleName = 'AtlassianPS.Standards'; ModuleVersion = '0.1.2'; MaximumVersion = '0.1.2' }
-
 [CmdletBinding()]
 param(
     [ValidateSet('None', 'Normal' , 'Detailed', 'Diagnostic')]
@@ -25,13 +23,27 @@ param(
     [String[]] $IntegrationTestPath
 )
 
-if ($VersionToPublish) {
-    $VersionToPublish = $VersionToPublish.TrimStart('v')
-}
-
 Import-Module "$PSScriptRoot/Tools/BuildTools.psm1" -Force
 
+function Import-JiraAgilePSStandard {
+    [CmdletBinding()]
+    param()
+
+    $buildRequirements = Import-PowerShellDataFile -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Tools/build.requirements.psd1')
+    $standardsRequirement = $buildRequirements |
+        Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
+        Select-Object -First 1
+
+    if (-not $standardsRequirement) {
+        throw 'AtlassianPS.Standards is missing from Tools/build.requirements.psd1.'
+    }
+
+    Import-Module AtlassianPS.Standards -RequiredVersion $standardsRequirement.RequiredVersion -Force -ErrorAction Stop
+}
+
 $ProjectName = 'JiraAgilePS'
+Import-JiraAgilePSStandard
+
 $script:BuildInfo = Initialize-AtlassianPSBuildEnvironment `
     -ProjectName $ProjectName `
     -ProjectPath $PSScriptRoot `
@@ -281,10 +293,15 @@ Task UpdateManifest {
 }
 
 Task SetVersion {
+    $releaseNotes = Get-AtlassianPSReleaseNotesFromChangelog `
+        -ChangelogPath (Join-Path -Path $env:BHProjectPath -ChildPath 'CHANGELOG.md') `
+        -ReleaseVersion $script:BuildInfo.VersionToPublish
+
     $versionString = Set-AtlassianPSModuleManifestVersion `
         -BuiltManifestPath $builtManifestPath `
         -ModuleName $env:BHProjectName `
-        -VersionToPublish $VersionToPublish
+        -VersionToPublish $VersionToPublish `
+        -ReleaseNotes $releaseNotes
     Write-Build Gray "Resolved release version: $versionString"
 }
 

@@ -1,6 +1,6 @@
 @{
     RootModule           = 'JiraAgilePS.psm1'
-    ModuleVersion        = '0.1'
+    ModuleVersion        = '0.1.0'
     GUID                 = '4de7d140-4fb6-4ac3-a187-82dcd762ebe9'
     Author               = 'AtlassianPS'
     CompanyName          = 'AtlassianPS.org'
