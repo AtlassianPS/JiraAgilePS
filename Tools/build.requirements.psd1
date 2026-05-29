@@ -1,5 +1,5 @@
 @(
-    @{ ModuleName = "AtlassianPS.Standards"; RequiredVersion = "0.1.2" }
+    @{ ModuleName = "AtlassianPS.Standards"; RequiredVersion = "0.1.11" }
     @{ ModuleName = "JiraPS"; RequiredVersion = "2.16.0" }
     @{ ModuleName = "InvokeBuild"; RequiredVersion = "5.14.23" }
     @{ ModuleName = "Metadata"; RequiredVersion = "1.5.7" }
