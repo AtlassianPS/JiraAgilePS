@@ -4,12 +4,6 @@ on:
   push:
     tags:
       - "v*"
-  workflow_dispatch:
-    inputs:
-      release_tag:
-        description: "Tag to release (for manual reruns)"
-        required: true
-        type: string
 
 jobs:
   release:
@@ -22,13 +16,10 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
 
       - name: Validate release tag
         id: release_ref
         uses: AtlassianPS/AtlassianPS.Standards/.github/actions/resolve-release-tag@6fe5d05db84cdd10c9e4284e235a8f359c9537ad # v0.1.11
-        with:
-          tag: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
 
       - name: Download artifact from tagged commit CI run
         uses: dawidd6/action-download-artifact@v21

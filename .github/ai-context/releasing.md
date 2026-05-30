@@ -27,16 +27,13 @@ This runbook keeps only JiraAgilePS-specific release details.
 The CI workflow validates release packaging on every qualifying run with the `Release Dry Run` job:
 
 ```powershell
-$sourceManifestData = Import-PowerShellDataFile -Path './JiraAgilePS/JiraAgilePS.psd1'
-$dryRunVersion = "v$($sourceManifestData.ModuleVersion)"
-Invoke-Build -Task Clean, Build, SetVersion, Package -VersionToPublish $dryRunVersion
+Invoke-Build -Task Clean, TestPublish
 ```
 
 The job verifies that:
 
 - `Release/JiraAgilePS/JiraAgilePS.psd1` exists.
 - `Release/JiraAgilePS.zip` exists.
-- manifest release notes are populated from `CHANGELOG.md`.
 
 Before pushing a release tag, run the blueprint metadata preflight for the exact tag:
 
