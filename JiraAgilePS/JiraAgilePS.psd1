@@ -1,13 +1,15 @@
 @{
     RootModule           = 'JiraAgilePS.psm1'
-    ModuleVersion        = '0.1'
+    ModuleVersion        = '0.1.0'
     GUID                 = '4de7d140-4fb6-4ac3-a187-82dcd762ebe9'
     Author               = 'AtlassianPS'
     CompanyName          = 'AtlassianPS.org'
     Copyright            = '(c) 2017 AtlassianPS. All rights reserved.'
     Description          = 'placeholder'
     PowerShellVersion    = '3.0'
-    RequiredModules      = @("JiraPS")
+    RequiredModules      = @(
+        @{ ModuleName = 'JiraPS'; RequiredVersion = '2.16.0' }
+    )
     FormatsToProcess     = 'JiraAgilePS.format.ps1xml'
     # NestedModules     = @()
     FunctionsToExport    = '*'

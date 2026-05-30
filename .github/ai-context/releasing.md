@@ -1,8 +1,7 @@
 # Releasing JiraAgilePS
 
-Issue: [#17](https://github.com/AtlassianPS/JiraAgilePS/issues/17)
-
-Use this checklist for the first production release and later JiraAgilePS releases.
+JiraAgilePS follows the canonical [AtlassianPS release blueprint](https://github.com/AtlassianPS/AtlassianPS.Standards/blob/master/docs/ReleaseBlueprint.md).
+This runbook keeps only JiraAgilePS-specific release details.
 
 ## Release readiness
 
@@ -14,6 +13,7 @@ Use this checklist for the first production release and later JiraAgilePS releas
   Pushes to `master` and first-party pull requests must run smoke tests successfully.
 - Run broader Cloud and Server integration tracks before a production release when credentials and Docker are available.
 - Confirm `CHANGELOG.md` contains the user-facing release notes for the version being published.
+  Future release headings should use `## vX.Y.Z - YYYY-MM-DD` so they match the `vX.Y.Z` release tag.
 
 ## Required repository secrets and variables
 
@@ -27,40 +27,46 @@ Use this checklist for the first production release and later JiraAgilePS releas
 The CI workflow validates release packaging on every qualifying run with the `Release Dry Run` job:
 
 ```powershell
-Invoke-Build -Task Clean, Build, SetVersion, Package -VersionToPublish v9999.0.0-alpha1
+Invoke-Build -Task Clean, TestPublish
 ```
 
 The job verifies that:
 
 - `Release/JiraAgilePS/JiraAgilePS.psd1` exists.
 - `Release/JiraAgilePS.zip` exists.
-- the manifest version is updated to `9999.0.0`.
-- the manifest prerelease label is updated to `alpha1`.
+
+Before pushing a release tag, run the blueprint metadata preflight for the exact tag:
+
+```powershell
+Invoke-Build -Task Build, SetVersion -VersionToPublish vX.Y.Z
+```
 
 ## Prerelease path
 
 Use a prerelease tag to validate the full tagged release workflow without marking the GitHub release as stable:
 
 ```powershell
-git tag v0.1.0-rc1
+git tag -a v0.1.0-rc1 -m "Release v0.1.0-rc1"
 git push origin v0.1.0-rc1
 ```
 
 Tags containing `alpha`, `beta`, or `rc` are marked as GitHub prereleases by `release.yml`.
-The workflow downloads the `Release` artifact from the successful CI run for the tagged commit, publishes the module with the tag version, and uploads `Release/JiraAgilePS.zip` to the GitHub release.
+The workflow validates the annotated tag, downloads the `Release` artifact from the successful CI run for the tagged commit, builds release notes from `CHANGELOG.md`, publishes the module with the tag version, and uploads `Release/JiraAgilePS.zip` to the GitHub release.
 
 ## Stable release path
 
 After the prerelease path is verified, publish the stable release from the exact commit that passed CI:
 
 ```powershell
-git tag v0.1.0
+git tag -a v0.1.0 -m "Release v0.1.0"
 git push origin v0.1.0
 ```
 
 After the workflow completes, verify:
 
 - the GitHub release exists for the tag.
+- the GitHub release body matches the changelog section for the tag.
 - `Release/JiraAgilePS.zip` is attached to the GitHub release.
 - the PowerShell Gallery package is available.
+- the PowerShell Gallery release notes match the changelog section for the tag.
 - the homepage dispatch ran for the stable release.
