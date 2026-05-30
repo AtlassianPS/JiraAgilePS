@@ -1,61 +1,79 @@
-#requires -Modules @{ ModuleName='PowerShellGet'; ModuleVersion='1.6.0' }
+#requires -Module PowerShellGet
 
 [CmdletBinding()]
-[System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingWriteHost', '')]
-param()
+param(
+    [Parameter(DontShow = $true)]
+    [ValidateSet('Desktop', 'Core')]
+    [String]$RuntimePSEdition = $PSVersionTable.PSEdition,
 
-$psScriptAnalyzerSettingsPath = Join-Path (Join-Path $PSScriptRoot '..') 'PSScriptAnalyzerSettings.psd1'
-$buildRequirements = Import-PowerShellDataFile -Path (Join-Path -Path $PSScriptRoot -ChildPath 'build.requirements.psd1')
+    [Parameter(DontShow = $true)]
+    [Switch]$ForceDesktopBootstrapRemediation
+)
+
+$ErrorActionPreference = 'Stop'
+
+$projectRoot = (Resolve-Path -LiteralPath (Join-Path -Path $PSScriptRoot -ChildPath '..')).ProviderPath
+$buildRequirementsPath = Join-Path -Path $projectRoot -ChildPath 'Tools/build.requirements.psd1'
+$manifestPath = Join-Path -Path $projectRoot -ChildPath 'JiraAgilePS/JiraAgilePS.psd1'
+
+$buildRequirements = Import-PowerShellDataFile -Path $buildRequirementsPath
 $standardsRequirement = $buildRequirements |
     Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
     Select-Object -First 1
 
-if (-not $standardsRequirement) {
-    throw 'AtlassianPS.Standards is missing from Tools/build.requirements.psd1.'
+if (-not $standardsRequirement -or -not $standardsRequirement.RequiredVersion) {
+    throw "Could not resolve AtlassianPS.Standards required version from '$buildRequirementsPath'."
 }
 
 $standardsVersion = [string] $standardsRequirement.RequiredVersion
+$isWindowsPowerShell = $RuntimePSEdition -eq 'Desktop'
+if ($isWindowsPowerShell) {
+    $nuGetProvider = Get-PackageProvider -Name 'NuGet' -ListAvailable -ErrorAction SilentlyContinue |
+        Sort-Object -Property Version -Descending |
+        Select-Object -First 1
 
-function Sync-PSScriptAnalyzerSetting {
-    [CmdletBinding()]
-    param()
+    $requiresNuGetBootstrap = (
+        $ForceDesktopBootstrapRemediation -or
+        (-not $nuGetProvider -or $nuGetProvider.Version -lt [Version] '2.8.5.201')
+    )
 
-    Write-Host "Syncing PSScriptAnalyzer settings from AtlassianPS.Standards"
+    if ($requiresNuGetBootstrap) {
+        Install-PackageProvider -Name 'NuGet' -MinimumVersion '2.8.5.201' -Scope CurrentUser -Force -ErrorAction Stop
+    }
 
+}
+
+$psGalleryRepository = Get-PSRepository -Name 'PSGallery' -ErrorAction SilentlyContinue
+if (-not $psGalleryRepository) {
     try {
-        Import-Module AtlassianPS.Standards -RequiredVersion $standardsVersion -Force -ErrorAction Stop
-        $resolvedSettingsPath = Sync-AtlassianPSScriptAnalyzerSettings `
-            -DestinationPath $psScriptAnalyzerSettingsPath `
-            -ErrorAction Stop
-        Write-Host "Shared PSScriptAnalyzer settings synchronized to '$resolvedSettingsPath'."
+        Register-PSRepository -Default -ErrorAction Stop
     }
     catch {
-        throw "Unable to sync PSScriptAnalyzer settings from AtlassianPS.Standards. $($_.Exception.Message)"
+        throw "PSGallery repository is unavailable. Register PSGallery or configure repository access, then rerun '$($MyInvocation.MyCommand.Path)'."
     }
+
+    $psGalleryRepository = Get-PSRepository -Name 'PSGallery' -ErrorAction SilentlyContinue
 }
 
-# PowerShell 5.1 and bellow need the PSGallery to be intialized
-if (-not ($gallery = Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
-    Write-Host "Installing PackageProvider NuGet"
-    $null = Install-PackageProvider -Name NuGet -Force -ErrorAction SilentlyContinue
-    Register-PSRepository -Default -ErrorAction SilentlyContinue
-    $gallery = Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue
-    if (-not $gallery) {
-        throw "Unable to register the default PSGallery repository."
-    }
+if (-not $psGalleryRepository) {
+    throw "PSGallery repository is unavailable. Register PSGallery or configure repository access, then rerun '$($MyInvocation.MyCommand.Path)'."
 }
 
-# Make PSGallery trusted, to aviod a confirmation in the console
-if ($gallery -and -not ($gallery.Trusted)) {
-    Write-Host "Trusting PSGallery"
-    Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+if ($isWindowsPowerShell -and ($ForceDesktopBootstrapRemediation -or $psGalleryRepository.InstallationPolicy -ne 'Trusted')) {
+    Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction Stop
 }
 
-Write-Host "Installing InvokeBuild"
-Install-Module InvokeBuild -Scope CurrentUser -Force
+Install-Module -Name 'AtlassianPS.Standards' `
+    -RequiredVersion $standardsVersion `
+    -Scope CurrentUser `
+    -Repository 'PSGallery' `
+    -AllowClobber `
+    -Force `
+    -ErrorAction Stop
 
-Write-Host "Installing Dependencies"
-Import-Module "$PSScriptRoot/BuildTools.psm1" -Force
-Install-Dependency
+Import-Module -Name 'AtlassianPS.Standards' -RequiredVersion $standardsVersion -Force -ErrorAction Stop
 
-Sync-PSScriptAnalyzerSetting
+$null = Install-AtlassianPSDependencyRequirement `
+    -BuildRequirementsPath $buildRequirementsPath `
+    -ManifestPath $manifestPath `
+    -ErrorAction Stop
