@@ -308,6 +308,6 @@ Use `Get-JiraAgileIssue` in normal module usage. `Get-Issue` is the source funct
 
 ## RELATED LINKS
 
-[Get-BoardConfiguration](Get-BoardConfiguration.html)
+[Get-BoardConfiguration](../Get-BoardConfiguration/)
 
-[Get-Epic](Get-Epic.html)
+[Get-Epic](../Get-Epic/)

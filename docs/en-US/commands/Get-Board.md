@@ -182,6 +182,6 @@ Use `Get-JiraAgileBoard` in normal module usage. `Get-Board` is the source funct
 
 ## RELATED LINKS
 
-[Get-Sprint](Get-Sprint.html)
+[Get-Sprint](../Get-Sprint/)
 
-[Add-IssueToSprint](Add-IssueToSprint.html)
+[Add-IssueToSprint](../Add-IssueToSprint/)

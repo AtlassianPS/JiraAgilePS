@@ -231,6 +231,6 @@ Use `Get-JiraAgileSprint` in normal module usage. `Get-Sprint` is the source fun
 
 ## RELATED LINKS
 
-[Get-Board](Get-Board.html)
+[Get-Board](../Get-Board/)
 
-[Add-IssueToSprint](Add-IssueToSprint.html)
+[Add-IssueToSprint](../Add-IssueToSprint/)

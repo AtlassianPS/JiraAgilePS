@@ -192,4 +192,4 @@ Use `Get-JiraAgileEpic` in normal module usage. `Get-Epic` is the source functio
 
 ## RELATED LINKS
 
-[Get-Issue](Get-Issue.html)
+[Get-Issue](../Get-Issue/)
