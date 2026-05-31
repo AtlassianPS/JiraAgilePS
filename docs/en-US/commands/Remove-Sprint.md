@@ -103,6 +103,6 @@ Use `Remove-JiraAgileSprint` in normal module usage. `Remove-Sprint` is the sour
 
 ## RELATED LINKS
 
-[Get-Sprint](Get-Sprint.html)
+[Get-Sprint](../Get-Sprint/)
 
-[New-Sprint](New-Sprint.html)
+[New-Sprint](../New-Sprint/)

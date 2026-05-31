@@ -181,6 +181,6 @@ Use `Set-JiraAgileSprint` in normal module usage. `Set-Sprint` is the source fun
 
 ## RELATED LINKS
 
-[Get-Sprint](Get-Sprint.html)
+[Get-Sprint](../Get-Sprint/)
 
-[New-Sprint](New-Sprint.html)
+[New-Sprint](../New-Sprint/)

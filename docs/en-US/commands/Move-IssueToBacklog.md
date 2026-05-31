@@ -105,6 +105,6 @@ Use `Move-JiraAgileIssueToBacklog` in normal module usage. `Move-IssueToBacklog`
 
 ## RELATED LINKS
 
-[Add-IssueToSprint](Add-IssueToSprint.html)
+[Add-IssueToSprint](../Add-IssueToSprint/)
 
-[Get-Issue](Get-Issue.html)
+[Get-Issue](../Get-Issue/)
