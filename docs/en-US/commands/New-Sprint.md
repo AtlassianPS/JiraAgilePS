@@ -165,6 +165,6 @@ Use `New-JiraAgileSprint` in normal module usage. `New-Sprint` is the source fun
 
 ## RELATED LINKS
 
-[Get-Board](Get-Board.html)
+[Get-Board](../Get-Board/)
 
-[Get-Sprint](Get-Sprint.html)
+[Get-Sprint](../Get-Sprint/)

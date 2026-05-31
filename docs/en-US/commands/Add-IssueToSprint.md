@@ -136,6 +136,6 @@ Use `Add-JiraAgileIssueToSprint` in normal module usage. `Add-IssueToSprint` is 
 
 ## RELATED LINKS
 
-[Get-Board](Get-Board.html)
+[Get-Board](../Get-Board/)
 
-[Get-Sprint](Get-Sprint.html)
+[Get-Sprint](../Get-Sprint/)

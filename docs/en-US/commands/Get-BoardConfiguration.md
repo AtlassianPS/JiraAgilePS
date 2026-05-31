@@ -92,6 +92,6 @@ Use `Get-JiraAgileBoardConfiguration` in normal module usage. `Get-BoardConfigur
 
 ## RELATED LINKS
 
-[Get-Issue](Get-Issue.html)
+[Get-Issue](../Get-Issue/)
 
 [Commands index](/docs/JiraAgilePS/commands/)
