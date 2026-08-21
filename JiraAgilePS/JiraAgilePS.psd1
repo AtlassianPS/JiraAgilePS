@@ -4,7 +4,7 @@
     GUID                 = '4de7d140-4fb6-4ac3-a187-82dcd762ebe9'
     Author               = 'AtlassianPS'
     CompanyName          = 'AtlassianPS.org'
-    Copyright            = '(c) 2017 AtlassianPS. All rights reserved.'
+    Copyright            = '(c) 2017 AtlassianPS contributors.'
     Description          = 'placeholder'
     PowerShellVersion    = '3.0'
     RequiredModules      = @("JiraPS")
