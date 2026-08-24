@@ -70,7 +70,10 @@ Describe "General project validation" -Tag Unit {
             }
 
             It "is loaded in the module" {
-                $commandInModule = $module.Invoke({ Get-Command -Name $args[0] -ErrorAction SilentlyContinue }, $functionName)
+                $commandInModule = InModuleScope JiraAgilePS -Parameters @{ FunctionName = $functionName } {
+                    Get-Command -Name $FunctionName -CommandType Function -ErrorAction SilentlyContinue |
+                        Where-Object { $_.ModuleName -eq 'JiraAgilePS' }
+                }
 
                 $commandInModule | Should -Not -BeNullOrEmpty -Because "private function '$functionName' should be loaded"
             }
