@@ -4,7 +4,7 @@ This guide explains the JiraAgilePS test layout and the expected commands for ta
 
 ## Test Structure
 
-JiraAgilePS uses Pester 5.7+.
+JiraAgilePS uses Pester 5.9.x.
 Tests mirror the module structure so contributors can find the test for a function from its source path.
 
 - `Tests/Functions/Public/` contains unit tests for exported cmdlets.
