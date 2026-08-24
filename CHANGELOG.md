@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.1.1 - 2026-08-24
+
 ### Changed
 
 * Automated releases from merged pull-request intent using the shared AtlassianPS.Standards pipeline (#35, @lipkau).
