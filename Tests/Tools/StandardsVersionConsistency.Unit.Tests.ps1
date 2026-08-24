@@ -1,114 +1,93 @@
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.9.0"; MaximumVersion = "5.9.999" }
 
 Describe 'AtlassianPS.Standards release blueprint consistency' -Tag Unit {
     BeforeAll {
-        $envProjectPath = if ($env:BHProjectPath) {
-            Resolve-Path -LiteralPath $env:BHProjectPath -ErrorAction SilentlyContinue
-        }
-        $hasEnvProjectMarker = $envProjectPath -and (
-            (Test-Path -LiteralPath (Join-Path -Path $env:BHProjectPath -ChildPath 'CODEOWNERS')) -or
-            (Test-Path -LiteralPath (Join-Path -Path $env:BHProjectPath -ChildPath 'JiraAgilePS.build.ps1'))
-        )
+        . "$PSScriptRoot/../Helpers/TestTools.ps1"
+        $script:projectRoot = Resolve-ProjectRoot
+        $script:standardsActionSha = 'fc574a6647971312d28383dd06e29a1a8d2e66e6'
 
-        $script:projectRoot = if ($hasEnvProjectMarker) {
-            (Resolve-Path -LiteralPath $env:BHProjectPath).ProviderPath
-        }
-        else {
-            $candidate = (Resolve-Path -LiteralPath $PSScriptRoot).ProviderPath
-            while ($candidate -and ($candidate -ne [System.IO.Path]::GetPathRoot($candidate))) {
-                if (
-                    (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'CODEOWNERS')) -or
-                    (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'JiraAgilePS.build.ps1'))
-                ) {
-                    break
-                }
-
-                $candidate = Split-Path -Path $candidate -Parent
-            }
-
-            if (-not $candidate -or -not (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'JiraAgilePS.build.ps1'))) {
-                throw "Could not resolve repository root from '$PSScriptRoot'."
-            }
-
-            $candidate
-        }
-
-        $buildRequirementsPath = Join-Path -Path $script:projectRoot -ChildPath 'Tools/build.requirements.psd1'
-        $buildRequirements = Import-PowerShellDataFile -Path $buildRequirementsPath
-        $standardsRequirement = $buildRequirements |
-            Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
+        $requirements = Import-PowerShellDataFile -Path (Join-Path $script:projectRoot 'Tools/build.requirements.psd1')
+        $standardsRequirement = $requirements |
+            Where-Object ModuleName -EQ 'AtlassianPS.Standards' |
             Select-Object -First 1
-
-        $script:standardsVersion = [string] $standardsRequirement.RequiredVersion
-        $script:releaseWorkflowContent = Get-Content -LiteralPath (Join-Path -Path $script:projectRoot -ChildPath '.github/workflows/release.yml') -Raw
-        $script:buildScriptContent = Get-Content -LiteralPath (Join-Path -Path $script:projectRoot -ChildPath 'JiraAgilePS.build.ps1') -Raw
+        $script:standardsVersion = [string]$standardsRequirement.RequiredVersion
+        $script:workflowRoot = Join-Path $script:projectRoot '.github/workflows'
+        $script:buildScript = Get-Content (Join-Path $script:projectRoot 'JiraAgilePS.build.ps1') -Raw
     }
 
-    It 'pins all Standards workflow actions to the released SHA with matching version comments' {
-        $workflowPaths = Get-ChildItem -Path (Join-Path -Path $script:projectRoot -ChildPath '.github/workflows') -File -Filter '*.yml' |
-            Select-Object -ExpandProperty FullName
-
-        $workflowActionMatches = foreach ($workflowPath in $workflowPaths) {
-            $workflowContent = Get-Content -LiteralPath $workflowPath -Raw
+    It 'pins every Standards workflow dependency to the released build dependency' {
+        $matches = foreach ($workflow in Get-ChildItem $script:workflowRoot -Filter '*.yml') {
+            $content = Get-Content -LiteralPath $workflow.FullName -Raw
             [regex]::Matches(
-                $workflowContent,
-                'AtlassianPS/AtlassianPS\.Standards/\.github/actions/[^@\s]+@(?<sha>[^\s]+)\s+#\s*v(?<version>[0-9]+\.[0-9]+\.[0-9]+)'
-            ) | ForEach-Object {
-                [PSCustomObject]@{
-                    WorkflowPath = $workflowPath
-                    Sha          = $_.Groups['sha'].Value
-                    Version      = $_.Groups['version'].Value
-                }
-            }
+                $content,
+                'AtlassianPS/AtlassianPS\.Standards/\.github/(?:actions/[^\s@]+|workflows/module_release\.yml)@(?<sha>[0-9a-f]{40})\s+#\s+v(?<version>\d+\.\d+\.\d+)'
+            )
         }
 
-        @($workflowActionMatches).Count | Should -BeGreaterThan 0
-        foreach ($sha in ($workflowActionMatches | Select-Object -ExpandProperty Sha)) {
-            $sha | Should -Match '^[0-9a-f]{40}$'
-        }
-        ($workflowActionMatches | Select-Object -ExpandProperty Sha -Unique) | Should -Be @('6fe5d05db84cdd10c9e4284e235a8f359c9537ad')
-        ($workflowActionMatches | Select-Object -ExpandProperty Version -Unique) | Should -Be @($script:standardsVersion)
+        @($matches).Count | Should -BeGreaterThan 0
+        @($matches | ForEach-Object { $_.Groups['sha'].Value } | Select-Object -Unique) |
+            Should -Be @($script:standardsActionSha)
+        @($matches | ForEach-Object { $_.Groups['version'].Value } | Select-Object -Unique) |
+            Should -Be @($script:standardsVersion)
     }
 
-    It 'uses the shared release tag resolver action' {
-        $script:releaseWorkflowContent | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/actions/resolve-release-tag@[0-9a-f]{40}'
-        $script:releaseWorkflowContent | Should -Not -Match 'git rev-list -n 1|Tools/Resolve-ReleaseTag\.ps1'
+    It 'uses a safe pull-request-target release intent workflow' {
+        $content = Get-Content (Join-Path $script:workflowRoot 'release_intent.yml') -Raw
+
+        $content | Should -Match 'pull_request_target:'
+        $content | Should -Match 'pull-requests:\s+read'
+        $content | Should -Match 'issues:\s+write'
+        $content | Should -Match 'validate-release-intent@[0-9a-f]{40}'
+        $content | Should -Not -Match 'actions/checkout|\brun:'
     }
 
-    It 'builds release notes before publishing and uses them for the GitHub release body' {
-        $script:releaseWorkflowContent | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/actions/build-release-notes@[0-9a-f]{40}'
-        $script:releaseWorkflowContent | Should -Match 'body_path:\s+\$\{\{\s*steps\.release_notes\.outputs\.release_notes_path\s*\}\}'
-        $script:releaseWorkflowContent | Should -Match 'build-release-notes[\s\S]+Publish module'
+    It 'uses the shared continuous release workflow' {
+        $content = Get-Content (Join-Path $script:workflowRoot 'continuous_release.yml') -Raw
+
+        $content | Should -Match 'workflow_run:'
+        $content | Should -Match 'workflows:\s*\[CI\]'
+        $content | Should -Match 'workflows/module_release\.yml@[0-9a-f]{40}'
+        $content | Should -Match 'module-name:\s*JiraAgilePS'
+        $content | Should -Match 'issues:\s+read'
     }
 
-    It 'does not keep old changelog release plumbing' {
-        $forbiddenPath = Join-Path -Path $script:projectRoot -ChildPath '.github/changelog.configuration.json'
-        $forbiddenPath | Should -Not -Exist
+    It 'builds and verifies the exact release candidate in CI' {
+        $content = Get-Content (Join-Path $script:workflowRoot 'ci.yml') -Raw
 
-        $repositoryText = Get-ChildItem -Path $script:projectRoot -Recurse -File |
-            Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]|[\\/]Release[\\/]|[\\/]Tests[\\/]Tools[\\/]StandardsVersionConsistency\.Unit\.Tests\.ps1$' } |
-            ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -ErrorAction SilentlyContinue }
-
-        $repositoryText | Should -Not -Match 'changelog-to-release|changelog\.configuration\.json|steps\.changelog\.outputs\.body'
-        $script:releaseWorkflowContent | Should -Not -Match 'write-file|Set-Content|Out-File'
-        $script:buildScriptContent | Should -Not -Match 'Get-AtlassianPSReleaseNotesFromChangelog[\s\S]+Set-Content'
+        $content | Should -Match ([regex]::Escape("^Prepare (?<tag>v\d+\.\d+\.\d+) release$"))
+        $content | Should -Match 'build-release-notes@[0-9a-f]{40}'
+        $content | Should -Match 'Invoke-Build -Task SetVersion -VersionToPublish'
+        $content | Should -Match 'Invoke-Build -Task VerifyReleaseArtifact -VersionToPublish'
+        $script:buildScript | Should -Match 'Task VerifyReleaseArtifact Package'
+        $script:buildScript | Should -Match '-ExpectedVersion\s+\$expectedVersion'
+        $script:buildScript | Should -Match '-RequireReleaseNotes'
     }
 
-    It 'sources published manifest release notes from the changelog through Standards' {
-        $script:buildScriptContent | Should -Match 'Get-AtlassianPSReleaseNotesFromChangelog[\s\S]+CHANGELOG\.md'
-        $script:buildScriptContent | Should -Match 'Set-AtlassianPSModuleManifestVersion[\s\S]+-ReleaseNotes\s+\$releaseNotes'
+    It 'does not retain the legacy tag release workflow or build publish task' {
+        Join-Path $script:workflowRoot 'release.yml' | Should -Not -Exist
+        $script:buildScript | Should -Not -Match 'Task Publish\b|PSGalleryAPIKey|Publish-Module'
+    }
+
+    It 'keeps source release notes empty until release preparation' {
+        $manifest = Import-PowerShellDataFile (Join-Path $script:projectRoot 'JiraAgilePS/JiraAgilePS.psd1')
+
+        $manifest.PrivateData.PSData.ReleaseNotes | Should -BeNullOrEmpty
+        $script:buildScript | Should -Match 'Task SetSourceVersion'
+        $script:buildScript | Should -Match 'Get-AtlassianPSReleaseNotesFromChangelog[\s\S]+-ReleaseNotes\s+\$releaseNotes'
+    }
+
+    It 'keeps GitHub Actions dependency updates non-releasing' {
+        $content = Get-Content (Join-Path $script:projectRoot '.github/dependabot.yml') -Raw
+
+        $content | Should -Match 'package-ecosystem:\s*"github-actions"[\s\S]+labels:[\s\S]+- dependencies[\s\S]+- github_actions[\s\S]+- "release:none"'
     }
 
     It 'reads the Standards version from build.requirements in local tooling' {
-        $setupScriptContent = Get-Content -LiteralPath (Join-Path -Path $script:projectRoot -ChildPath 'Tools/setup.ps1') -Raw
-        $buildScriptContent = Get-Content -LiteralPath (Join-Path -Path $script:projectRoot -ChildPath 'JiraAgilePS.build.ps1') -Raw
+        $setupScript = Get-Content (Join-Path $script:projectRoot 'Tools/setup.ps1') -Raw
 
-        $setupScriptContent | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
-        $setupScriptContent | Should -Match '-RequiredVersion\s+\$standardsVersion'
-        $setupScriptContent | Should -Not -Match "AtlassianPS\.Standards.*RequiredVersion\s+'[0-9]+\.[0-9]+\.[0-9]+'"
-
-        $buildScriptContent | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
-        $buildScriptContent | Should -Match '-RequiredVersion\s+\$standardsRequirement\.RequiredVersion'
-        $buildScriptContent | Should -Not -Match "AtlassianPS\.Standards.*RequiredVersion\s+'[0-9]+\.[0-9]+\.[0-9]+'"
+        $setupScript | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
+        $setupScript | Should -Match '-RequiredVersion\s+\$standardsVersion'
+        $script:buildScript | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
+        $script:buildScript | Should -Match '-RequiredVersion\s+\$standardsRequirement\.RequiredVersion'
     }
 }
