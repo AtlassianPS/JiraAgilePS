@@ -37,7 +37,7 @@ jobs:
       JIRA_TEST_FILTER: ${{ vars.JIRA_TEST_FILTER }}
       JIRA_TEST_VERSION: ${{ vars.JIRA_TEST_VERSION }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
       - run: Invoke-Build -Task TestIntegration -Tag Cloud -PesterVerbosity Detailed
@@ -65,7 +65,7 @@ jobs:
       CI_JIRA_USER_PASSWORD: jira
       CI_JIRA_TEST_PROJECT: TEST
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - run: docker compose up -d
         shell: bash
