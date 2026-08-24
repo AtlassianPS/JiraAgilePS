@@ -1,0 +1,30 @@
+name: Continuous Release
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      release_impact:
+        description: Release impact for unreleased changes already on master
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  actions: read
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  release:
+    uses: AtlassianPS/AtlassianPS.Standards/.github/workflows/module_release.yml@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
+    with:
+      module-name: JiraAgilePS
+      release-impact: ${{ inputs.release_impact }}
+    secrets: inherit

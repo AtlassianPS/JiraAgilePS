@@ -7,86 +7,128 @@ concurrency:
 on:
   pull_request:
     branches: [master]
-    paths-ignore: &paths-ignore
-      - "CHANGELOG.md"
-      - "LICENSE"
-      - ".github/*.md"
-      - ".github/ISSUE_TEMPLATE/**"
-      - ".github/PULL_REQUEST_TEMPLATE/**"
-      - ".vscode/**"
-      - ".editorconfig"
-      - ".spelling"
   push:
     branches: [master]
-    paths-ignore: *paths-ignore
   workflow_dispatch:
 
-jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+permissions:
+  contents: read
+  pull-requests: read
 
-      - run: Invoke-Build -Task Lint
-        shell: pwsh
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      run_ci: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || steps.filter.outputs.code == 'true' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - id: filter
+        name: Decide whether full CI is required
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4
+        with:
+          predicate-quantifier: every
+          filters: |
+            code:
+              - '**'
+              - '!.editorconfig'
+              - '!.github/copilot-instructions.md'
+              - '!.spelling'
+              - '!AGENTS.md'
+              - '!CHANGELOG.md'
+              - '!CLAUDE.md'
+              - '!GEMINI.md'
+              - '!LICENSE'
+              - '!.cursor/**'
+              - '!.github/*.md'
+              - '!.github/ai-context/**'
+              - '!.github/instructions/**'
+              - '!.github/ISSUE_TEMPLATE/**'
+              - '!.github/PULL_REQUEST_TEMPLATE/**'
+              - '!.vscode/**'
+              - '!docs-regenerated/**'
 
   build:
-    name: Build Module
-    needs: lint
+    name: Lint and build
+    needs: changes
+    if: needs.changes.outputs.run_ci == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
 
-      - name: Build
-        run: Invoke-Build -Task ShowInfo, Clean, Build
+      - run: Invoke-Build -Task Lint, Build
         shell: pwsh
 
-      - name: Upload release artifact
-        uses: actions/upload-artifact@v7
+      - name: Resolve release build
+        id: release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        shell: pwsh
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          if ($env:COMMIT_MESSAGE -match '^Prepare (?<tag>v\d+\.\d+\.\d+) release$') {
+            "tag=$($Matches.tag)" >> $env:GITHUB_OUTPUT
+          }
+
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/build-release-notes@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
+        if: steps.release.outputs.tag != ''
+        with:
+          release-version: ${{ steps.release.outputs.tag }}
+
+      - name: Stamp and verify release build
+        if: steps.release.outputs.tag != ''
+        run: |
+          Invoke-Build -Task SetVersion -VersionToPublish ${{ steps.release.outputs.tag }}
+          Invoke-Build -Task VerifyReleaseArtifact -VersionToPublish ${{ steps.release.outputs.tag }}
+        shell: pwsh
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: Release
           path: ./Release/
+          if-no-files-found: error
 
   test_windows_ps5:
     name: Test (Windows PS5)
-    needs: build
+    needs: [changes, build]
+    if: needs.changes.outputs.run_ci == 'true'
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
         with:
           ps-version: "5"
           skip-setup: "true"
 
-      - name: Setup dependencies
-        run: |
-          ./Tools/setup.ps1
-          Invoke-Build -Task ShowDebugInfo
-        shell: powershell
-
-      - name: Download release artifact
-        uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: Release
           path: ./Release/
 
-      - name: Test
-        run: Invoke-Build -Task Test
+      - name: Setup
+        shell: powershell
+        run: |
+          ./Tools/setup.ps1
+          Invoke-Build -Task ShowDebugInfo
+
+      - run: Invoke-Build -Task Test
         shell: powershell
 
-      - name: Upload unit test results
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
-        uses: actions/upload-artifact@v7
         with:
           name: Windows-PS5-Unit-Tests
           path: Test*.xml
 
   test_pwsh:
     name: Test (${{ matrix.name }})
-    needs: build
+    needs: [changes, build]
+    if: needs.changes.outputs.run_ci == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -96,36 +138,32 @@ jobs:
           - { os: ubuntu-latest, name: "Ubuntu" }
           - { os: macos-latest, name: "macOS" }
     steps:
-      - uses: actions/checkout@v7
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
 
-      - name: Download release artifact
-        uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: Release
           path: ./Release/
 
-      - name: Test
-        run: Invoke-Build -Task Test
+      - run: Invoke-Build -Task Test
         shell: pwsh
 
-      - name: Upload unit test results
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
-        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}-Unit-Tests
           path: Test*.xml
 
   smoke_tests:
     name: Smoke Tests
-    needs: lint
-    runs-on: ubuntu-latest
-    # Skip on fork PRs and Dependabot PRs because secrets are not exposed there.
-    # First-party PRs and pushes to master gate on smoke tests, and release.yml
-    # requires a successful CI workflow for the exact tagged commit.
-    if: github.event_name != 'pull_request' ||
+    needs: [changes, build]
+    if: >-
+      needs.changes.outputs.run_ci == 'true' &&
+      (github.event_name != 'pull_request' ||
       (github.event.pull_request.head.repo.full_name == github.repository &&
-       github.actor != 'dependabot[bot]')
+      github.actor != 'dependabot[bot]'))
+    runs-on: ubuntu-latest
     env:
       JIRA_CLOUD_URL: ${{ vars.JIRA_CLOUD_URL }}
       JIRA_CLOUD_USERNAME: ${{ vars.ATLASSIAN_CLOUD_USER }}
@@ -133,55 +171,22 @@ jobs:
       JIRA_TEST_PROJECT: ${{ vars.JIRA_TEST_PROJECT }}
       JIRA_TEST_ISSUE: ${{ vars.JIRA_TEST_ISSUE }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
 
-      - run: Invoke-Build -Task TestIntegration -Tag Smoke -PesterVerbosity Detailed
+      - run: Invoke-Build -Task TestIntegration -Tag 'Smoke' -PesterVerbosity Detailed
         shell: pwsh
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: Smoke-Tests
           path: Test-Integration.xml
 
-  release_dry_run:
-    name: Release Dry Run
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
-
-      - name: Validate release packaging path
-        shell: pwsh
-        run: |
-          Invoke-Build -Task Clean, Build, SetVersion, Package -VersionToPublish v9999.0.0-alpha1
-
-          $manifestPath = './Release/JiraAgilePS/JiraAgilePS.psd1'
-          $packagePath = './Release/JiraAgilePS.zip'
-
-          if (-not (Test-Path $manifestPath)) {
-            throw "Missing release manifest: $manifestPath"
-          }
-          if (-not (Test-Path $packagePath)) {
-            throw "Missing release package: $packagePath"
-          }
-
-          $manifest = Test-ModuleManifest -Path $manifestPath -ErrorAction Stop -WarningAction SilentlyContinue
-          if ($manifest.Version.ToString() -ne '9999.0.0') {
-            throw "Expected manifest version 9999.0.0, got $($manifest.Version)"
-          }
-
-          $manifestData = Import-PowerShellDataFile -Path $manifestPath
-          if ($manifestData.PrivateData.PSData.Prerelease -ne 'alpha1') {
-            throw "Expected prerelease alpha1, got '$($manifestData.PrivateData.PSData.Prerelease)'"
-          }
-
   ci-required:
     name: CI Result
     if: always()
-    needs: [lint, build, test_windows_ps5, test_pwsh, release_dry_run, smoke_tests]
+    needs: [changes, build, test_windows_ps5, test_pwsh, smoke_tests]
     runs-on: ubuntu-latest
     steps:
       - name: Aggregate job results
