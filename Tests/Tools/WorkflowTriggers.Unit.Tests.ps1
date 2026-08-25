@@ -2,7 +2,9 @@
 
 Describe 'GitHub Actions workflow triggers' -Tag Unit {
     BeforeAll {
-        $script:workflowRoot = Join-Path "$PSScriptRoot/../.." '.github/workflows'
+        . "$PSScriptRoot/../Helpers/TestTools.ps1"
+        $script:projectRoot = Resolve-ProjectRoot
+        $script:workflowRoot = Join-Path $script:projectRoot '.github/workflows'
     }
 
     It 'starts continuous release only for completed CI runs on master' {
