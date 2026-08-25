@@ -14,6 +14,11 @@ on:
           - cloud
           - server
           - both
+      debug:
+        description: "Upload Data Center container logs even when tests succeed"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -48,6 +53,7 @@ jobs:
         with:
           name: Cloud-Integration-Tests
           path: Test-Integration.xml
+          retention-days: 14
 
   server_integration_tests:
     name: Smoke Integration Tests (Dockerized Jira DC)
@@ -83,16 +89,18 @@ jobs:
         with:
           name: Server-Integration-Tests
           path: Test-Integration.xml
+          retention-days: 14
 
       - run: docker compose logs jira > jira-container.log
-        if: always()
+        if: ${{ failure() || inputs.debug || runner.debug == '1' }}
         shell: bash
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: always()
+        if: ${{ failure() || inputs.debug || runner.debug == '1' }}
         with:
           name: Server-Jira-Container-Logs
           path: jira-container.log
+          retention-days: 7
 
       - run: docker compose down -v
         if: always()
