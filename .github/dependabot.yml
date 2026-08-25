@@ -15,16 +15,16 @@ updates:
   - package-ecosystem: "devcontainers"
     directory: "/.devcontainer"
     schedule:
-      interval: weekly
+      interval: monthly
   - package-ecosystem: "docker"
     directory: "/.devcontainer"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     commit-message:
       prefix: "⬆️ "
   - package-ecosystem: "docker-compose"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     commit-message:
       prefix: "⬆️ "
