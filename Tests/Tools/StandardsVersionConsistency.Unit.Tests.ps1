@@ -51,16 +51,13 @@ Describe 'AtlassianPS.Standards release blueprint consistency' -Tag Unit {
         $content | Should -Match 'issues:\s+read'
     }
 
-    It 'builds and verifies the exact release candidate in CI' {
+    It 'delegates CI to the immutable Standards workflow' {
         $content = Get-Content (Join-Path $script:workflowRoot 'ci.yml') -Raw
 
-        $content | Should -Match ([regex]::Escape("^Prepare (?<tag>v\d+\.\d+\.\d+) release$"))
-        $content | Should -Match 'build-release-notes@[0-9a-f]{40}'
-        $content | Should -Match 'Invoke-Build -Task SetVersion -VersionToPublish'
-        $content | Should -Match 'Invoke-Build -Task VerifyReleaseArtifact -VersionToPublish'
-        $script:buildScript | Should -Match 'Task VerifyReleaseArtifact Package'
-        $script:buildScript | Should -Match '-ExpectedVersion\s+\$expectedVersion'
-        $script:buildScript | Should -Match '-RequireReleaseNotes'
+        $content | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/workflows/module_ci\.yml@[0-9a-f]{40}\s+#\s+v0\.2\.0'
+        $content | Should -Match 'smoke-profile:\s+jira'
+        $content | Should -Match '(?ms)ci-required:.*?name:\s+CI Result.*?needs:\s+module-ci'
+        $content | Should -Not -Match 'actions/checkout@|Invoke-Build|upload-artifact@'
     }
 
     It 'does not retain the legacy tag release workflow or build publish task' {
