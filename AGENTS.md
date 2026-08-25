@@ -70,6 +70,7 @@ Notes for this repository's current legacy state:
 - `.github/workflows/release_intent.yml` validates one `release:*` intent per pull request.
 - `.github/workflows/continuous_release.yml` prepares and publishes the exact candidate validated by CI.
 - `.github/ai-context/releasing.md` documents the continuous-release flow.
+- Branch protection requires both `CI Result` and `Release Intent` before merge.
 - Keep workflow assumptions aligned with this flow when updating instructions or build logic.
 
 ## When Working on This Project
