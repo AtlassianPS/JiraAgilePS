@@ -268,7 +268,12 @@ Describe "Help tests" -Tag "Documentation", "Build" {
                                 }
                             }
                         }
-                        $helpType = if ($parameterHelp -and $parameterHelp.parameterValue) { $parameterHelp.parameterValue.Trim() }
+                        $helpType = if ($parameterHelp -and $parameterHelp.parameterValue) {
+                            $parameterHelp.parameterValue.Trim()
+                        }
+                        elseif ($parameterHelp -and $parameterHelp.type.name) {
+                            $parameterHelp.type.name.Trim()
+                        }
                         if ($helpType -eq "PSCustomObject") { $helpType = "PSObject" }
                         if ($helpType -eq "Switch") { $helpType = "SwitchParameter" }
 

@@ -4,7 +4,7 @@ Describe 'AtlassianPS.Standards release blueprint consistency' -Tag Unit {
     BeforeAll {
         . "$PSScriptRoot/../Helpers/TestTools.ps1"
         $script:projectRoot = Resolve-ProjectRoot
-        $script:standardsActionSha = 'f691d79ab6b5e44b67db390f6a61ebf00e2f7293'
+        $script:standardsActionSha = 'bd959dc3de7ee8426f89c31a62e0282e7140bd51'
 
         $requirements = Import-PowerShellDataFile -Path (Join-Path $script:projectRoot 'Tools/build.requirements.psd1')
         $standardsRequirement = $requirements |
@@ -54,7 +54,7 @@ Describe 'AtlassianPS.Standards release blueprint consistency' -Tag Unit {
     It 'delegates CI to the immutable Standards workflow' {
         $content = Get-Content (Join-Path $script:workflowRoot 'ci.yml') -Raw
 
-        $content | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/workflows/module_ci\.yml@[0-9a-f]{40}\s+#\s+v0\.2\.0'
+        $content | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/workflows/module_ci\.yml@[0-9a-f]{40}\s+#\s+v\d+\.\d+\.\d+'
         $content | Should -Match 'smoke-profile:\s+jira'
         $content | Should -Match '(?ms)ci-required:.*?name:\s+CI Result.*?needs:\s+module-ci'
         $content | Should -Not -Match 'actions/checkout@|Invoke-Build|upload-artifact@'
@@ -77,6 +77,7 @@ Describe 'AtlassianPS.Standards release blueprint consistency' -Tag Unit {
         $content = Get-Content (Join-Path $script:projectRoot '.github/dependabot.yml') -Raw
 
         $content | Should -Match 'package-ecosystem:\s*"github-actions"[\s\S]+labels:[\s\S]+- dependencies[\s\S]+- github_actions[\s\S]+- "release:none"'
+        $content | Should -Match 'ignore:[\s\S]+dependency-name:\s*"AtlassianPS/AtlassianPS\.Standards\*"'
     }
 
     It 'reads the Standards version from build.requirements in local tooling' {

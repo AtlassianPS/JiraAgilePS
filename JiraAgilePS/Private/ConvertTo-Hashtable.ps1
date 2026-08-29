@@ -18,7 +18,7 @@ function ConvertTo-HashTable {
 
     begin {
         $hash = @{ }
-        $InputObject.PSObject.Properties | Foreach-Object {
+        $InputObject.PSObject.Properties | ForEach-Object {
             $hash[$_.Name] = $_.Value
         }
         $hash
