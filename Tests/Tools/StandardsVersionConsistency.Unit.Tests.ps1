@@ -77,7 +77,7 @@ Describe 'AtlassianPS.Standards release blueprint consistency' -Tag Unit {
         $content = Get-Content (Join-Path $script:projectRoot '.github/dependabot.yml') -Raw
 
         $content | Should -Match 'package-ecosystem:\s*"github-actions"[\s\S]+labels:[\s\S]+- dependencies[\s\S]+- github_actions[\s\S]+- "release:none"'
-        $content | Should -Match 'ignore:[\s\S]+dependency-name:\s*"AtlassianPS/AtlassianPS\.Standards\*"'
+        $content | Should -Not -Match 'ignore:[\s\S]+dependency-name:\s*"AtlassianPS/AtlassianPS\.Standards\*"'
     }
 
     It 'reads the Standards version from build.requirements in local tooling' {
