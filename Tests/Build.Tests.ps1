@@ -19,6 +19,14 @@ Describe "Validation of build environment" -Tag Unit {
         }
     }
 
+    Context "Pester result gate" {
+        It "includes test, block, and container failures" {
+            $buildScript = Get-Content -LiteralPath (Join-Path $moduleRoot 'JiraAgilePS.build.ps1') -Raw
+
+            $buildScript | Should -Match '\$result\.FailedCount \+ \$result\.FailedBlocksCount \+ \$result\.FailedContainersCount'
+        }
+    }
+
     Context "CHANGELOG" {
         BeforeAll {
             $changelogFile = "$moduleRoot/CHANGELOG.md"
