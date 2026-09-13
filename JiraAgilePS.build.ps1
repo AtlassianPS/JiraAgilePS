@@ -66,8 +66,8 @@ Task Lint {
     $null = Invoke-AtlassianPSModuleTests `
         -TestPath "$env:BHProjectPath/Tests/Style.Tests.ps1" `
         -PesterVerbosity $PesterVerbosity `
-        -MinimumPesterVersion ([Version]'5.9.0') `
-        -MaximumPesterVersion ([Version]'5.9.999')
+        -MinimumPesterVersion ([Version]'6.2.0') `
+        -MaximumPesterVersion ([Version]'6.2.0')
 
     $null = Invoke-AtlassianPSLint `
         -ProjectPath $env:BHProjectPath `
@@ -195,14 +195,14 @@ Task Test {
         -ExcludeTag $ExcludeTag `
         -DefaultExcludeTag @('Integration') `
         -ExcludePath $integrationTestFiles `
-        -MinimumPesterVersion ([Version]'5.9.0') `
-        -MaximumPesterVersion ([Version]'5.9.999')
+        -MinimumPesterVersion ([Version]'6.2.0') `
+        -MaximumPesterVersion ([Version]'6.2.0')
 }
 
 # Synopsis: Run integration tests against live Jira Agile (Cloud or Data Center; no build required)
 Task TestIntegration {
     Get-Module Pester | Remove-Module -Force -ErrorAction SilentlyContinue
-    Import-Module Pester -MinimumVersion '5.9.0' -MaximumVersion '5.9.999' -ErrorAction Stop
+    Import-Module Pester -RequiredVersion '6.2.0' -ErrorAction Stop
 
     $integrationHelperPath = Join-Path $env:BHProjectPath 'Tests/Helpers/IntegrationTestTools.ps1'
     if (Test-Path $integrationHelperPath) {
