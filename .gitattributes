@@ -17,7 +17,7 @@ CHANGELOG.md merge=union
 *.clixml        text  eol=crlf
 *.cs            text  eol=crlf
 *.xml           text  eol=crlf
-*.yml           text  eol=crlf
+*.yml           text  eol=lf
 *.txt           text  eol=crlf
 *.json          text  eol=crlf
 
