@@ -1,10 +1,11 @@
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "6.2.0"; MaximumVersion = "6.999" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "6.2.0"; MaximumVersion = "6.999" }
 
 Describe 'AtlassianPS.Standards release blueprint consistency' -Tag Unit {
     BeforeAll {
         . "$PSScriptRoot/../Helpers/TestTools.ps1"
         $script:projectRoot = Resolve-ProjectRoot
         $script:standardsActionSha = 'fa0c5f72ddb2b96712ffb8f8f0623fa7220d9dd8'
+        $script:releaseActionSha = '160631f20740a10152d4560d698b5e16806d0edb'
 
         $requirements = Import-PowerShellDataFile -Path (Join-Path $script:projectRoot 'Tools/build.requirements.psd1')
         $standardsRequirement = $requirements |
@@ -15,7 +16,7 @@ Describe 'AtlassianPS.Standards release blueprint consistency' -Tag Unit {
         $script:buildScript = Get-Content (Join-Path $script:projectRoot 'JiraAgilePS.build.ps1') -Raw
     }
 
-    It 'pins every Standards workflow dependency to the released build dependency' {
+    It 'pins build workflows to the released dependency and release to the reviewed implementation' {
         $matches = foreach ($workflow in Get-ChildItem $script:workflowRoot -Filter '*.yml') {
             $content = Get-Content -LiteralPath $workflow.FullName -Raw
             [regex]::Matches(
@@ -24,9 +25,23 @@ Describe 'AtlassianPS.Standards release blueprint consistency' -Tag Unit {
             )
         }
 
+        $buildShas = @(
+            $matches |
+                Where-Object { -not $_.Value.Contains('workflows/module_release') } |
+                ForEach-Object { $_.Groups['sha'].Value } |
+                Select-Object -Unique
+        )
+        $releaseShas = @(
+            $matches |
+                Where-Object { $_.Value.Contains('workflows/module_release') } |
+                ForEach-Object { $_.Groups['sha'].Value } |
+                Select-Object -Unique
+        )
+
         @($matches).Count | Should -BeGreaterThan 0
-        @($matches | ForEach-Object { $_.Groups['sha'].Value } | Select-Object -Unique) |
-            Should -Be @($script:standardsActionSha)
+        $buildShas | Should -Be @($script:standardsActionSha)
+        $releaseShas | Should -Be @($script:releaseActionSha)
+
         @($matches | ForEach-Object { $_.Groups['version'].Value } | Select-Object -Unique) |
             Should -Be @($script:standardsVersion)
     }
@@ -48,6 +63,8 @@ Describe 'AtlassianPS.Standards release blueprint consistency' -Tag Unit {
         $content | Should -Match 'workflows:\s*\[CI\]'
         $content | Should -Match 'workflows/module_release\.yml@[0-9a-f]{40}'
         $content | Should -Match 'module-name:\s*JiraAgilePS'
+        $content | Should -Match 'prerelease_branch:'
+        $content | Should -Match 'prerelease-branch: \$\{\{ inputs.prerelease_branch \}\}'
         $content | Should -Match 'issues:\s+read'
     }
 
